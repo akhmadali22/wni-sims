@@ -42,6 +42,8 @@ export interface BoardTile {
   name: string;
   type: TileType;
   verified: boolean;
+  landmark?: string;
+  symbol?: string;
   island?: string;
   side: number;
   sidePosition: number;

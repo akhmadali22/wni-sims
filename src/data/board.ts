@@ -86,6 +86,75 @@ interface SideSegment {
   startIndex: number;
 }
 
+interface ReferenceTile {
+  name: string;
+  type: TileType;
+  landmark?: string;
+  symbol?: string;
+}
+
+/**
+ * Transkripsi visual dari foto papan fisik yang diberikan pengguna.
+ * Urutan mengikuti traversal dari corner awal menuju corner akhir tiap sisi.
+ * Nama, posisi, dan landmark tetap provisional sampai dicocokkan dengan
+ * kartu properti/rulebook asli, sehingga seluruh entri tetap `verified: false`.
+ */
+const IMAGE_REFERENCE_LAYOUT: Record<
+  IslandName,
+  readonly ReferenceTile[]
+> = {
+  Sumatra: [
+    { name: "Aceh", type: "property", landmark: "Masjid Raya Baiturrahman", symbol: "🕌" },
+    { name: "Medan", type: "property", landmark: "Istana Maimun", symbol: "🏛" },
+    { name: "Tol", type: "toll", symbol: "↔" },
+    { name: "Lampung", type: "property", landmark: "Menara Siger", symbol: "♛" },
+    { name: "Padang", type: "property", landmark: "Jam Gadang", symbol: "◷" },
+    { name: "Takdir", type: "destiny", symbol: "✦" },
+    { name: "Batam", type: "property", landmark: "Jembatan Barelang", symbol: "⌁" },
+    { name: "Tilang", type: "ticket", symbol: "▣" },
+  ],
+  Kalimantan: [
+    { name: "Banjarmasin", type: "property", landmark: "Masjid Sultan Suriansyah", symbol: "🕌" },
+    { name: "Takdir", type: "destiny", symbol: "✦" },
+    { name: "Pontianak", type: "property", landmark: "Tugu Khatulistiwa", symbol: "◎" },
+    { name: "Musibah", type: "disaster", symbol: "!" },
+    { name: "Tol", type: "toll", symbol: "↔" },
+    { name: "Samarinda", type: "property", landmark: "Jembatan Mahakam", symbol: "⌁" },
+    { name: "Balikpapan", type: "property", landmark: "Beruang Madu", symbol: "◆" },
+    { name: "Palangkaraya", type: "property", landmark: "Tugu Soekarno", symbol: "▲" },
+  ],
+  Sulawesi: [
+    { name: "Makassar", type: "property", landmark: "Kapal Pinisi", symbol: "⛵" },
+    { name: "Musibah", type: "disaster", symbol: "!" },
+    { name: "Tol", type: "toll", symbol: "↔" },
+    { name: "Palu", type: "property", landmark: "Jembatan Palu IV", symbol: "⌁" },
+    { name: "Kendari", type: "property", landmark: "Tugu Persatuan", symbol: "◇" },
+    { name: "Takdir", type: "destiny", symbol: "✦" },
+    { name: "Gorontalo", type: "property", landmark: "Menara Keagungan Limboto", symbol: "♜" },
+    { name: "Manado", type: "property", landmark: "Monumen Yesus Memberkati", symbol: "†" },
+  ],
+  Papua: [
+    { name: "Merauke", type: "property", landmark: "Monumen Kapsul Waktu", symbol: "⬡" },
+    { name: "Timika", type: "property", landmark: "Kuala Kencana", symbol: "♧" },
+    { name: "Takdir", type: "destiny", symbol: "✦" },
+    { name: "Jayapura", type: "property", landmark: "Jembatan Youtefa", symbol: "⌁" },
+    { name: "Manokwari", type: "property", landmark: "Tugu Injil", symbol: "†" },
+    { name: "Sorong", type: "property", landmark: "Tugu Merah Putih", symbol: "⚑" },
+    { name: "Tol", type: "toll", symbol: "↔" },
+    { name: "Musibah", type: "disaster", symbol: "!" },
+  ],
+  Jawa: [
+    { name: "Jakarta", type: "property", landmark: "Monumen Nasional", symbol: "♜" },
+    { name: "Bandung", type: "property", landmark: "Gedung Sate", symbol: "♛" },
+    { name: "Musibah", type: "disaster", symbol: "!" },
+    { name: "Semarang", type: "property", landmark: "Lawang Sewu", symbol: "▥" },
+    { name: "Takdir", type: "destiny", symbol: "✦" },
+    { name: "Yogyakarta", type: "property", landmark: "Tugu Yogyakarta", symbol: "♜" },
+    { name: "Musibah", type: "disaster", symbol: "!" },
+    { name: "Surabaya", type: "property", landmark: "Patung Suro dan Boyo", symbol: "≈" },
+  ],
+};
+
 const SIDE_SEGMENTS: SideSegment[] = [
   { island: "Sumatra", side: 2, startIndex: 1 },
   { island: "Kalimantan", side: 3, startIndex: 10 },
@@ -131,12 +200,18 @@ export const board: BoardTile[] = Array.from(
     }
 
     const sidePosition = index - segment.startIndex;
+    const referenceTile = IMAGE_REFERENCE_LAYOUT[segment.island][sidePosition];
+
+    if (!referenceTile) {
+      throw new Error(
+        `Referensi petak tidak ditemukan untuk ${segment.island} posisi ${sidePosition}`,
+      );
+    }
 
     return {
       id: `tile-${index}`,
       index,
-      name: `${segment.island} ${sidePosition + 1}`,
-      type: "unknown",
+      ...referenceTile,
       verified: false,
       island: segment.island,
       side: segment.side,

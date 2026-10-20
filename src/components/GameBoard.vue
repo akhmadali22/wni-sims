@@ -14,10 +14,10 @@ const props = defineProps<{
   players: Player[];
 }>();
 
-const WIDTH = 1000;
-const HEIGHT = 900;
+const WIDTH = 1200;
+const HEIGHT = 1080;
 
-const CENTER = { x: 500, y: 450 };
+const CENTER = { x: WIDTH / 2, y: 520 };
 
 /*
  * Vertex pentagon:
@@ -29,7 +29,11 @@ const CENTER = { x: 500, y: 450 };
  */
 // Pentagon: lima vertex dengan orientasi konsisten.
 const BOARD_CENTER = CENTER;
-const OUTER_RADIUS = 355;
+const OUTER_RADIUS = 430;
+const OUTLINE_CORNER_RADIUS = 32;
+const CORNER_INSET_RATIO = 0.105;
+const TRACK_HALF_HEIGHT = 30;
+const TILE_GAP = 4;
 
 // Vertex pertama di atas, lalu searah jarum jam.
 const vertices = Array.from({ length: 5 }, (_, index) => {
@@ -41,10 +45,6 @@ const vertices = Array.from({ length: 5 }, (_, index) => {
   };
 });
 
-const polygonPoints = vertices
-  .map(({ x, y }) => `${x},${y}`)
-  .join(" ");
-
 function interpolate(
   start: { x: number; y: number },
   end: { x: number; y: number },
@@ -55,6 +55,69 @@ function interpolate(
     y: start.y + (end.y - start.y) * ratio,
   };
 }
+
+function moveTowards(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  distance: number,
+) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy) || 1;
+
+  return {
+    x: from.x + (dx / length) * distance,
+    y: from.y + (dy / length) * distance,
+  };
+}
+
+function getReadableRotation(angle: number) {
+  if (angle > 90) {
+    return angle - 180;
+  }
+
+  if (angle < -90) {
+    return angle + 180;
+  }
+
+  return angle;
+}
+
+const roundedCorners = vertices.map((vertex, index) => ({
+  vertex,
+  start: moveTowards(
+    vertex,
+    vertices[(index + vertices.length - 1) % vertices.length],
+    OUTLINE_CORNER_RADIUS,
+  ),
+  end: moveTowards(
+    vertex,
+    vertices[(index + 1) % vertices.length],
+    OUTLINE_CORNER_RADIUS,
+  ),
+}));
+
+const roundedPolygonPath = [
+  `M ${roundedCorners[0].start.x} ${roundedCorners[0].start.y}`,
+  ...roundedCorners.flatMap((corner, index) => {
+    const next = roundedCorners[(index + 1) % roundedCorners.length];
+
+    return [
+      `Q ${corner.vertex.x} ${corner.vertex.y} ${corner.end.x} ${corner.end.y}`,
+      `L ${next.start.x} ${next.start.y}`,
+    ];
+  }),
+  "Z",
+].join(" ");
+
+const edgeSegments = vertices.map((vertex, index) => {
+  const next = vertices[(index + 1) % vertices.length];
+
+  return {
+    start: moveTowards(vertex, next, OUTLINE_CORNER_RADIUS),
+    end: moveTowards(next, vertex, OUTLINE_CORNER_RADIUS),
+  };
+});
 
 /*
  * Sudut ditempatkan sedikit ke dalam pentagon.
@@ -71,7 +134,7 @@ function getCornerPosition(corner: (typeof CORNERS)[number]) {
     return { ...CENTER };
   }
 
-  return interpolate(vertex, CENTER, 0.10);
+  return interpolate(vertex, CENTER, CORNER_INSET_RATIO);
 }
 
 
@@ -114,16 +177,20 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
   );
 
   const intervalCount = PROVISIONAL_TILES_PER_SIDE + 1;
-  const halfIn = Math.hypot(
+  const halfIn = (
+    Math.hypot(
     current.x - previous.x,
     current.y - previous.y,
-  ) / intervalCount / 2;
-  const halfOut = Math.hypot(
+    ) / intervalCount - TILE_GAP
+  ) / 2;
+  const halfOut = (
+    Math.hypot(
     next.x - current.x,
     next.y - current.y,
-  ) / intervalCount / 2;
+    ) / intervalCount - TILE_GAP
+  ) / 2;
 
-  const halfWidth = 24;
+  const halfWidth = TRACK_HALF_HEIGHT;
 
   // Normal ke arah luar pentagon untuk urutan vertex searah jarum jam.
   const outerIn = { x: incoming.y, y: -incoming.x };
@@ -138,8 +205,8 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
     y: current.y + outgoing.y * halfOut,
   };
 
-  const handleIn = halfIn * 1.35;
-  const handleOut = halfOut * 1.35;
+  const handleIn = halfIn * 1.15;
+  const handleOut = halfOut * 1.15;
 
   const c1 = {
     x: start.x + incoming.x * handleIn,
@@ -279,13 +346,15 @@ function getTilePosition(
     ratio,
   );
 
-  const rotation = Math.atan2(dy, dx) * 180 / Math.PI;
+  const rotation = getReadableRotation(
+    Math.atan2(dy, dx) * 180 / Math.PI,
+  );
 
   /*
    * Lebar petak mengikuti jarak pusat antarpeta.
    * Tambahan 1 unit mencegah celah kecil akibat pembulatan.
    */
-  const trackWidth = segmentLength / intervalCount + 1;
+  const trackWidth = segmentLength / intervalCount - TILE_GAP;
 
   return {
     ...position,
@@ -305,14 +374,10 @@ function getIslandLabel(side: number) {
   const dx = midpoint.x - CENTER.x;
   const dy = midpoint.y - CENTER.y;
   const length = Math.hypot(dx, dy) || 1;
-  const offset = 38;
-  let rotation = Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI;
-
-  if (rotation > 90) {
-    rotation -= 180;
-  } else if (rotation < -90) {
-    rotation += 180;
-  }
+  const offset = 58;
+  const rotation = getReadableRotation(
+    Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI,
+  );
 
   return {
     x: midpoint.x + (dx / length) * offset,
@@ -347,6 +412,16 @@ const CORNER_COLORS: Record<
   },
 };
 
+const SPECIAL_TILE_COLORS: Record<
+  string,
+  { color: string; lightColor: string }
+> = {
+  destiny: { color: "#087f8c", lightColor: "#d9f2f3" },
+  disaster: { color: "#d45d1f", lightColor: "#fff0df" },
+  toll: { color: "#427aa1", lightColor: "#e1eff8" },
+  ticket: { color: "#c43d55", lightColor: "#fde5ea" },
+};
+
 const positionedTiles = computed(() =>
   board.map((tile) => {
     const corner = CORNERS.find(
@@ -366,15 +441,19 @@ const positionedTiles = computed(() =>
       (item) => item.side === tile.side,
     );
 
+    const fallbackPalette = {
+      color: "#596579",
+      lightColor: "#e9edf3",
+    };
+
     const palette = isCorner
-      ? CORNER_COLORS[tile.type] ?? {
-          color: "#596579",
-          lightColor: "#e9edf3",
-        }
-      : {
-          color: island?.color ?? "#596579",
-          lightColor: island?.lightColor ?? "#e9edf3",
-        };
+      ? CORNER_COLORS[tile.type] ?? fallbackPalette
+      : tile.type === "property"
+        ? {
+            color: island?.color ?? fallbackPalette.color,
+            lightColor: island?.lightColor ?? fallbackPalette.lightColor,
+          }
+        : SPECIAL_TILE_COLORS[tile.type] ?? fallbackPalette;
 
     return {
       ...tile,
@@ -439,11 +518,12 @@ const tilePathPoints = computed(() => {
         </defs>
 
         <!-- Dasar papan -->
-        <polygon
-          :points="polygonPoints"
+        <path
+          :d="roundedPolygonPath"
           fill="url(#board-background)"
           stroke="#354c3e"
-          stroke-width="7"
+          stroke-width="14"
+          stroke-linecap="round"
           stroke-linejoin="round"
         />
 
@@ -452,22 +532,22 @@ const tilePathPoints = computed(() => {
           :points="tilePathPoints"
           fill="none"
           stroke="#354c3e"
-          stroke-width="5"
+          stroke-width="4"
           stroke-linecap="round"
           stroke-linejoin="round"
-          opacity="0.72"
+          opacity="0.28"
           pointer-events="none"
         />
 
         <!-- Batas pemisah setiap sisi -->
         <g>
           <line
-            v-for="(vertex, index) in vertices"
+            v-for="(edge, index) in edgeSegments"
             :key="`edge-${index}`"
-            :x1="vertex.x"
-            :y1="vertex.y"
-            :x2="vertices[(index + 1) % vertices.length].x"
-            :y2="vertices[(index + 1) % vertices.length].y"
+            :x1="edge.start.x"
+            :y1="edge.start.y"
+            :x2="edge.end.x"
+            :y2="edge.end.y"
             :stroke="ISLANDS[index].color"
             stroke-width="10"
             stroke-linecap="round"
@@ -475,17 +555,20 @@ const tilePathPoints = computed(() => {
         </g>
 
         <!-- Area tengah -->
-        <g class="board-center">
+        <g
+          class="board-center"
+          :transform="`translate(${CENTER.x} ${CENTER.y})`"
+        >
           <rect
-            x="325" y="345" width="350" height="210" rx="22"
+            x="-210" y="-125" width="420" height="250" rx="30"
             fill="#ffffff"
             stroke="#cbded1"
-            stroke-width="3"
+            stroke-width="4"
           />
 
           <text
-            x="500"
-            y="395"
+            x="0"
+            y="-72"
             text-anchor="middle"
             class="center-eyebrow"
           >
@@ -493,8 +576,8 @@ const tilePathPoints = computed(() => {
           </text>
 
           <text
-            x="500"
-            y="445"
+            x="0"
+            y="-15"
             text-anchor="middle"
             class="center-title"
           >
@@ -502,17 +585,17 @@ const tilePathPoints = computed(() => {
           </text>
 
           <line
-            x1="390"
-            y1="465"
-            x2="610"
-            y2="465"
+            x1="-125"
+            y1="10"
+            x2="125"
+            y2="10"
             stroke="#d7e5dc"
             stroke-width="3"
           />
 
           <text
-            x="500"
-            y="495"
+            x="0"
+            y="48"
             text-anchor="middle"
             class="center-subtitle"
           >
@@ -520,8 +603,8 @@ const tilePathPoints = computed(() => {
           </text>
 
           <text
-            x="500"
-            y="525"
+            x="0"
+            y="82"
             text-anchor="middle"
             class="center-subtitle"
           >
@@ -563,44 +646,40 @@ const tilePathPoints = computed(() => {
                 : tile.lightColor
             "
             :stroke="tile.color"
-            :stroke-width="tile.verified ? 3 : 2"
-            :stroke-dasharray="
-              tile.verified ? 'none' : '4 3'
-            "
+            stroke-width="3"
+            stroke-linecap="round"
             stroke-linejoin="round"
           />
           <rect
             v-else
             :x="-tile.trackWidth / 2"
-            y="-24"
+            :y="-TRACK_HALF_HEIGHT"
             :width="tile.trackWidth"
-            height="48"
-            rx="5"
+            :height="TRACK_HALF_HEIGHT * 2"
+            rx="10"
             :fill="
               tile.type === 'start'
                 ? tile.color
                 : tile.lightColor
             "
             :stroke="tile.color"
-            :stroke-width="tile.verified ? 3 : 2"
-            :stroke-dasharray="
-              tile.verified ? 'none' : '4 3'
-            "
+            stroke-width="3"
+            stroke-linecap="round"
             stroke-linejoin="round"
           />
 
           <text
             x="0"
-            y="-11"
+            y="-12"
             text-anchor="middle"
-            class="tile-index"
+            class="tile-symbol"
             :fill="
               tile.type === 'start'
                 ? '#ffffff'
                 : tile.color
             "
           >
-            {{ tile.index + 1 }}
+            {{ tile.symbol || tile.index + 1 }}
           </text>
 
           <text
@@ -608,6 +687,9 @@ const tilePathPoints = computed(() => {
             y="3"
             text-anchor="middle"
             class="tile-name"
+            :class="{
+              'tile-name--compact': tile.name.length > 8,
+            }"
             :fill="
               tile.type === 'start'
                 ? '#ffffff'
@@ -644,7 +726,8 @@ const tilePathPoints = computed(() => {
           </g>
 
           <title>
-            {{ tile.name }} | Pulau {{ tile.island }}
+            {{ tile.name }}{{ tile.landmark ? ` — ${tile.landmark}` : '' }}
+            | Pulau {{ tile.island }}
             | {{
               tile.players.map((player) => player.name).join(", ")
               || "Tidak ada pemain"
@@ -736,7 +819,7 @@ const tilePathPoints = computed(() => {
 }
 
 .island-label text {
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 900;
   letter-spacing: 1.5px;
   paint-order: stroke;
@@ -745,14 +828,19 @@ const tilePathPoints = computed(() => {
   stroke-linejoin: round;
 }
 
-.tile-index {
-  font-size: 9px;
+.tile-symbol {
+  font-family: "Segoe UI Symbol", "Segoe UI Emoji", sans-serif;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .tile-name {
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 700;
+}
+
+.tile-name--compact {
+  font-size: 7.5px;
 }
 
 .center-eyebrow {
@@ -764,7 +852,7 @@ const tilePathPoints = computed(() => {
 
 .center-title {
   fill: #176b50;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 900;
   letter-spacing: 1px;
 }

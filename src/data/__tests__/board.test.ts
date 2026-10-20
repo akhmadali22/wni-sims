@@ -56,11 +56,30 @@ describe("provisional board topology", () => {
       expect(
         islandTiles.every(
           (tile) =>
-            tile.side === island.side &&
-            tile.type === "unknown" &&
-            !tile.verified,
+            tile.side === island.side && !tile.verified,
         ),
       ).toBe(true);
+    }
+  });
+
+  it("memetakan 25 kota provisional dengan landmark", () => {
+    const properties = board.filter(
+      (tile) => tile.type === "property",
+    );
+
+    expect(properties).toHaveLength(25);
+    expect(
+      properties.every(
+        (tile) => Boolean(tile.landmark && tile.symbol),
+      ),
+    ).toBe(true);
+
+    for (const island of ISLANDS) {
+      expect(
+        properties.filter(
+          (tile) => tile.island === island.name,
+        ),
+      ).toHaveLength(5);
     }
   });
 });
