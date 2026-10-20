@@ -1,0 +1,852 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "name": "Pungli di Jalan",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu dimintai uang pungli sebesar Rp300.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 300000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Petugas meminta uang pungli sebesar Rp600.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 600000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu terkena pungli brutal sebesar Rp1.200.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 1200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Pajak Mendadak",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Tagihan pajak mendadak datang sebesar Rp200.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu harus membayar pajak mendadak sebesar Rp500.000.",
+          "action": "pay",
+          "amount": 500000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Tagihan pajak membengkak menjadi Rp1.000.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 1000000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "Tilang Elektronik",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu terkena tilang elektronik sebesar Rp150.000.",
+          "action": "pay",
+          "amount": 150000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Pelanggaran lalu lintas membuatmu harus membayar denda Rp400.000.",
+          "action": "pay",
+          "amount": 400000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Denda tilang mencapai Rp800.000. Bayar ke negara.",
+          "action": "pay",
+          "amount": 800000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "Kendaraan Mogok",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kendaraanmu mogok. Bayar biaya perbaikan sebesar Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kerusakan kendaraan cukup parah. Bayar biaya perbaikan Rp500.000.",
+          "action": "pay",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kendaraanmu rusak parah. Bayar Rp1.000.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 1000000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "Dompet Raib",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Dompetmu hilang. Bayar Rp200.000 untuk mengurus dokumen pengganti.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Dompetmu hilang bersama uang tunai. Kamu kehilangan Rp500.000.",
+          "action": "lose_money",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Seluruh isi dompetmu raib. Kamu kehilangan Rp1.000.000.",
+          "action": "lose_money",
+          "amount": 1000000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Salah Transfer",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu salah transfer. Bayar biaya administrasi Rp150.000.",
+          "action": "pay",
+          "amount": 150000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Uang hasil salah transfer tidak kembali. Kamu kehilangan Rp400.000.",
+          "action": "lose_money",
+          "amount": 400000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Salah transfer dalam jumlah besar membuatmu kehilangan Rp900.000.",
+          "action": "lose_money",
+          "amount": 900000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "Properti Disegel",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Properti milikmu disegel sementara. Bayar Rp200.000 untuk membuka segel.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Properti milikmu disegel. Bayar Rp500.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 500000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Negara menyita satu properti milikmu. Jika tidak memiliki properti, kamu harus membayar Rp1.000.000.",
+          "action": "seize_property",
+          "amount": 0,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": {
+            "condition": "no_property",
+            "action": "pay",
+            "amount": 1000000,
+            "recipient": "negara"
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "Sengketa Tanah",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Dokumen tanahmu bermasalah. Bayar Rp200.000 untuk mengurusnya.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu terlibat sengketa tanah. Bayar biaya penyelesaian sebesar Rp600.000.",
+          "action": "pay",
+          "amount": 600000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Negara menyita satu properti milikmu akibat sengketa tanah. Jika tidak memiliki properti, bayar Rp1.200.000.",
+          "action": "seize_property",
+          "amount": 0,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": {
+            "condition": "no_property",
+            "action": "pay",
+            "amount": 1200000,
+            "recipient": "negara"
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Penggusuran Mendadak",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu harus pindah tempat tinggal. Bayar biaya relokasi Rp250.000.",
+          "action": "pay",
+          "amount": 250000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Penggusuran membuatmu kehilangan tempat tinggal sementara. Bayar Rp600.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 600000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu digusur dan langsung dipindahkan ke Penjara. Lewati dua giliran berikutnya.",
+          "action": "move_and_lose_turn",
+          "amount": 0,
+          "recipient": null,
+          "destination": "penjara",
+          "turns_lost": 2,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "Panggilan Pengadilan",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu menerima panggilan pengadilan. Bayar biaya administrasi Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu harus menghadiri sidang. Bayar Rp500.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 500000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu wajib menjalani proses pengadilan. Pindah ke Pengadilan dan kehilangan dua giliran.",
+          "action": "move_and_lose_turn",
+          "amount": 0,
+          "recipient": null,
+          "destination": "pengadilan",
+          "turns_lost": 2,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "Kasus Salah Sasaran",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu terseret kasus yang salah. Bayar biaya administrasi Rp150.000.",
+          "action": "pay",
+          "amount": 150000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu harus menjalani pemeriksaan. Bayar Rp500.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 500000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu menjadi tersangka dalam kasus yang bukan urusanmu. Pindah ke Pengadilan dan bayar Rp1.000.000.",
+          "action": "move_and_pay",
+          "amount": 1000000,
+          "recipient": "negara",
+          "destination": "pengadilan",
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 12,
+      "name": "Ditahan Semalam",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu ditahan sementara dan harus membayar biaya administrasi Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "negara",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu ditahan dan dibawa ke Penjara. Kehilangan satu giliran.",
+          "action": "move_and_lose_turn",
+          "amount": 0,
+          "recipient": null,
+          "destination": "penjara",
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu ditahan selama dua giliran. Pindah ke Penjara dan bayar Rp500.000.",
+          "action": "move_pay_and_lose_turn",
+          "amount": 500000,
+          "recipient": "negara",
+          "destination": "penjara",
+          "turns_lost": 2,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "Kena Tipu Investasi",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Investasimu merugi. Kamu kehilangan Rp250.000.",
+          "action": "lose_money",
+          "amount": 250000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Investasi bodong menguras uangmu sebesar Rp600.000.",
+          "action": "lose_money",
+          "amount": 600000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu menjadi korban penipuan investasi besar-besaran. Kehilangan Rp1.200.000.",
+          "action": "lose_money",
+          "amount": 1200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "Pinjaman Berbunga",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Bunga pinjaman mulai menagih. Bayar Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Bunga pinjaman membengkak. Bayar Rp500.000.",
+          "action": "pay",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Utangmu semakin menumpuk. Bayar Rp1.000.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 1000000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 15,
+      "name": "Tagihan Rumah Membengkak",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Tagihan rumah naik. Bayar Rp150.000.",
+          "action": "pay",
+          "amount": 150000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Tagihan listrik, air, dan kebutuhan rumah membengkak. Bayar Rp400.000.",
+          "action": "pay",
+          "amount": 400000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Semua tagihan datang bersamaan. Bayar Rp900.000.",
+          "action": "pay",
+          "amount": 900000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": "Kena Musibah Tetangga",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu ikut menanggung biaya musibah lingkungan sebesar Rp100.000. Bayar ke bank.",
+          "action": "pay",
+          "amount": 100000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu harus membantu biaya musibah sebesar Rp250.000 ke bank dan memberikan Rp250.000 kepada pemain dengan uang paling sedikit.",
+          "action": "pay_and_transfer",
+          "amount": 250000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": {
+            "condition": "transfer_to_player_with_least_money",
+            "action": "pay_player",
+            "amount": 250000,
+            "recipient": "player_with_least_money"
+          }
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Musibah tetangga menjadi urusan semua orang. Bayar Rp500.000 kepada setiap pemain lain.",
+          "action": "pay_each_player",
+          "amount": 500000,
+          "recipient": "all_other_players",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "Patungan Wajib",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu diwajibkan ikut patungan. Bayar Rp100.000 kepada pemain berikutnya.",
+          "action": "pay_player",
+          "amount": 100000,
+          "recipient": "next_player",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Patungan wajib diberlakukan untuk semua pemain. Bayar Rp250.000 kepada setiap pemain lain.",
+          "action": "pay_each_player",
+          "amount": 250000,
+          "recipient": "all_other_players",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Patungan wajib berubah menjadi bencana keuangan. Bayar Rp500.000 kepada setiap pemain lain.",
+          "action": "pay_each_player",
+          "amount": 500000,
+          "recipient": "all_other_players",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 18,
+      "name": "Teman Pinjam Uang",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Temanmu meminjam uang. Berikan Rp150.000 kepada pemain dengan uang terbanyak.",
+          "action": "pay_player",
+          "amount": 150000,
+          "recipient": "richest_player",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Temanmu meminjam lebih banyak uang. Berikan Rp300.000 kepada pemain dengan uang terbanyak.",
+          "action": "pay_player",
+          "amount": 300000,
+          "recipient": "richest_player",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Semua pemain lain meminjam uang darimu. Bayar Rp500.000 kepada setiap pemain lain.",
+          "action": "pay_each_player",
+          "amount": 500000,
+          "recipient": "all_other_players",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 19,
+      "name": "Biaya Administrasi",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu dikenai biaya administrasi sebesar Rp100.000.",
+          "action": "pay",
+          "amount": 100000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Biaya administrasi meningkat menjadi Rp350.000.",
+          "action": "pay",
+          "amount": 350000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Biaya administrasi mencapai Rp800.000. Kamu juga kehilangan satu giliran untuk mengurus dokumen.",
+          "action": "pay_and_lose_turn",
+          "amount": 800000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 20,
+      "name": "Banjir Mendadak",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Banjir merusak sebagian barangmu. Bayar biaya perbaikan Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Banjir menyebabkan kerusakan besar. Bayar Rp500.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Banjir menghancurkan barang-barangmu. Bayar Rp1.000.000 dan pindah ke Parkiran Pungli.",
+          "action": "move_and_pay",
+          "amount": 1000000,
+          "recipient": "bank",
+          "destination": "parkiran_pungli",
+          "turns_lost": 0,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 21,
+      "name": "Barang Disita",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Barangmu disita sementara. Bayar Rp250.000 untuk mengambilnya kembali.",
+          "action": "pay",
+          "amount": 250000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Barang pentingmu disita dan tidak bisa dikembalikan. Kamu kehilangan Rp500.000.",
+          "action": "lose_money",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Satu properti milikmu disita dan dikembalikan ke bank. Jika tidak memiliki properti, kamu kehilangan Rp1.000.000.",
+          "action": "seize_property",
+          "amount": 0,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": {
+            "condition": "no_property",
+            "action": "lose_money",
+            "amount": 1000000,
+            "recipient": "bank"
+          }
+        }
+      }
+    },
+    {
+      "id": 22,
+      "name": "Tiket ke Bekasi",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Kamu harus melakukan perjalanan mendadak. Bayar biaya transportasi Rp200.000.",
+          "action": "pay",
+          "amount": 200000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Kamu terpaksa pindah ke Bekasi. Bayar biaya perjalanan dan relokasi Rp500.000.",
+          "action": "move_and_pay",
+          "amount": 500000,
+          "recipient": "bank",
+          "destination": "bekasi",
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Kamu dipindahkan ke Bekasi tanpa bisa menolak. Bayar Rp1.000.000 dan kehilangan satu giliran.",
+          "action": "move_pay_and_lose_turn",
+          "amount": 1000000,
+          "recipient": "bank",
+          "destination": "bekasi",
+          "turns_lost": 1,
+          "fallback": null
+        }
+      }
+    },
+    {
+      "id": 23,
+      "name": "Musibah Beruntun",
+      "effects": {
+        "ringan": {
+          "dice": [5, 6],
+          "description": "Satu masalah kecil datang menghampiri. Bayar Rp300.000.",
+          "action": "pay",
+          "amount": 300000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 0,
+          "fallback": null
+        },
+        "sedang": {
+          "dice": [3, 4],
+          "description": "Masalah datang bertubi-tubi. Bayar Rp600.000 dan kehilangan satu giliran.",
+          "action": "pay_and_lose_turn",
+          "amount": 600000,
+          "recipient": "bank",
+          "destination": null,
+          "turns_lost": 1,
+          "fallback": null
+        },
+        "brutal": {
+          "dice": [1, 2],
+          "description": "Semua masalah datang bersamaan. Bayar Rp1.200.000, pindah ke Penjara, dan kehilangan satu giliran.",
+          "action": "move_pay_and_lose_turn",
+          "amount": 1200000,
+          "recipient": "bank",
+          "destination": "penjara",
+          "turns_lost": 1,
+          "fallback": null
+        }
+      }
+    }
+  ]
+}
