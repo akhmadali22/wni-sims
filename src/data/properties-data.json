@@ -360,7 +360,7 @@
     }
   },
   {
-    "city": "Jakarta",
+    "city" : "Jakarta",
     "island": "Jawa",
     "land_price": 4000000,
     "rent": {

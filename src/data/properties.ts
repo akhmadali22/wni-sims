@@ -1,17 +1,32 @@
+import propertyDataset from "./properties-data.json";
+
+interface PropertyDatasetEntry {
+  city: string;
+  island: string;
+  land_price: number;
+  building_cost: {
+    subsidy: number;
+    okb: number;
+  };
+  rent: {
+    empty: number;
+    subsidy_1: number;
+    subsidy_2: number;
+    okb: number;
+  };
+}
+
 export interface PropertyDefinition {
   id: string;
   name: string;
   island: string;
-
   /** Harga tanah untuk kota ini dalam rupiah. */
   price: number;
-
   /** Biaya bangunan berdasarkan tipe rumah. */
   buildingCost: {
     subsidy: number;
     okb: number;
   };
-
   /** Tarif sewa berdasarkan kondisi rumah. */
   rent: {
     empty: number;
@@ -19,33 +34,37 @@ export interface PropertyDefinition {
     subsidy2: number;
     okb: number;
   };
-
   /** Apakah data sudah diverifikasi dengan sumber resmi. */
   verified: boolean;
 }
 
+function createPropertyId(city: string): string {
+  return city
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 /**
- * Data properti WNI Simulator.
- *
- * Harga dan tarif merupakan data simulasi berdasarkan
- * rasio yang ditentukan, bukan data resmi yang terverifikasi.
+ * Adapter tunggal dari dataset harga ke kontrak domain.
+ * Nilai masih simulasi dan belum diverifikasi terhadap rulebook resmi.
  */
-export const properties: PropertyDefinition[] = [
-  {
-    id: "pontianak",
-    name: "Pontianak",
-    island: "Kalimantan",
-    price: 2_000_000,
-    buildingCost: {
-      subsidy: 350_000,
-      okb: 500_000,
-    },
-    rent: {
-      empty: 500_000,
-      subsidy1: 1_000_000,
-      subsidy2: 1_800_000,
-      okb: 3_000_000,
-    },
-    verified: false,
+export const properties: PropertyDefinition[] = (
+  propertyDataset as PropertyDatasetEntry[]
+).map((property) => ({
+  id: createPropertyId(property.city),
+  name: property.city,
+  island: property.island,
+  price: property.land_price,
+  buildingCost: {
+    subsidy: property.building_cost.subsidy,
+    okb: property.building_cost.okb,
   },
-];
+  rent: {
+    empty: property.rent.empty,
+    subsidy1: property.rent.subsidy_1,
+    subsidy2: property.rent.subsidy_2,
+    okb: property.rent.okb,
+  },
+  verified: false,
+}));

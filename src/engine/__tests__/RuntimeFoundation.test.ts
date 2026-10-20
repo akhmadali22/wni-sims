@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { board } from "../../data/board";
+import { properties } from "../../data/properties";
 import type { PropertyState } from "../../types/game";
 import {
   applyFinancialTransaction,
@@ -28,7 +29,21 @@ describe("runtime foundation", () => {
     expect(JSON.parse(JSON.stringify(initial))).toEqual(initial);
     expect(initial.schemaVersion).toBe(1);
     expect(initial.revision).toBe(0);
-    expect(initial.propertyStates).toEqual({});
+    expect(Object.keys(initial.propertyStates)).toHaveLength(
+      properties.length,
+    );
+    expect(initial.propertyStates).toEqual(
+      Object.fromEntries(
+        properties.map((property) => [
+          property.id,
+          {
+            propertyId: property.id,
+            owner: { kind: "unowned" },
+            housingLevel: 0,
+          },
+        ]),
+      ),
+    );
     expect(getPlayerPropertyIds(state, "player-1")).toEqual([
       "property-example",
     ]);
