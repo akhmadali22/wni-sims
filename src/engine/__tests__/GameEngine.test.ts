@@ -22,7 +22,13 @@ describe("GameEngine", () => {
 
     expect(state.players).toHaveLength(2);
     expect(state.players[0].name).toBe("Ali");
-    expect(state.players[0].cash).toBe(DEFAULT_INITIAL_CASH);
+    expect(
+      state.players.every(
+        (player) =>
+          player.cash === DEFAULT_INITIAL_CASH &&
+          player.position === 0,
+      ),
+    ).toBe(true);
     expect(state.phase).toBe("awaiting_roll");
   });
 
@@ -36,14 +42,15 @@ describe("GameEngine", () => {
       ),
     ).not.toThrow();
 
-    expect(() =>
-      createInitialState(
-        Array.from(
-          { length: MAX_PLAYERS },
-          (_, index) => `Pemain ${index + 1}`,
-        ),
-      ),
-    ).not.toThrow();
+    const names = Array.from(
+      { length: MAX_PLAYERS },
+      (_, index) => `Pemain ${index + 1}`,
+    );
+    const state = createInitialState(names);
+
+    expect(state.players).toHaveLength(MAX_PLAYERS);
+    expect(state.players.map((player) => player.name)).toEqual(names);
+    expect(state.players.every((player) => player.position === 0)).toBe(true);
   });
 
   it("menolak jumlah pemain di luar batas", () => {
@@ -64,6 +71,12 @@ describe("GameEngine", () => {
         ),
       ),
     ).toThrow();
+  });
+
+  it("menolak nama pemain kosong", () => {
+    expect(() => createInitialState(["Ali", "   "])).toThrow(
+      /Nama pemain tidak boleh kosong/,
+    );
   });
 
   it("menghasilkan dadu antara satu dan enam", () => {

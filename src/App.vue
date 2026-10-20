@@ -3,14 +3,17 @@ import GameBoard from "./components/GameBoard.vue";
 import PlayerPanel from "./components/PlayerPanel.vue";
 import DiceRoller from "./components/DiceRoller.vue";
 import GameLog from "./components/GameLog.vue";
+import GameSetup from "./components/GameSetup.vue";
 
 import { useGame } from "./composables/useGame";
 
 const {
   state,
   currentPlayer,
+  startGame,
   throwDice,
   finishTurn,
+  finishPrisonTurn,
 } = useGame();
 </script>
 
@@ -22,13 +25,15 @@ const {
         <p>Prototipe permainan papan berbasis browser</p>
       </div>
 
-      <div class="turn-indicator">
+      <div v-if="state && currentPlayer" class="turn-indicator">
         <span>Giliran {{ state.turnNumber }}</span>
         <strong>{{ currentPlayer.name }}</strong>
       </div>
     </header>
 
-    <div class="layout">
+    <GameSetup v-if="!state" @start="startGame" />
+
+    <div v-else-if="currentPlayer" class="layout">
       <div class="main-column">
         <GameBoard :players="state.players" />
 
@@ -45,6 +50,15 @@ const {
           @click="finishTurn"
         >
           Akhiri Giliran
+        </button>
+
+        <button
+          v-if="state.phase === 'awaiting_prison_turn'"
+          class="end-turn-button"
+          type="button"
+          @click="finishPrisonTurn"
+        >
+          Akhiri Giliran Penjara
         </button>
       </div>
 
