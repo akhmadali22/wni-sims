@@ -1,0 +1,377 @@
+[
+  {
+    "city": "Aceh",
+    "island": "Sumatra",
+    "land_price": 1500000,
+    "rent": {
+      "empty": 375000,
+      "subsidy_1": 750000,
+      "subsidy_2": 1350000,
+      "okb": 2250000
+    },
+    "building_cost": {
+      "subsidy": 262500,
+      "okb": 375000
+    }
+  },
+  {
+    "city": "Medan",
+    "island": "Sumatra",
+    "land_price": 1500000,
+    "rent": {
+      "empty": 375000,
+      "subsidy_1": 750000,
+      "subsidy_2": 1350000,
+      "okb": 2250000
+    },
+    "building_cost": {
+      "subsidy": 262500,
+      "okb": 375000
+    }
+  },
+  {
+    "city": "Lampung",
+    "island": "Sumatra",
+    "land_price": 1500000,
+    "rent": {
+      "empty": 375000,
+      "subsidy_1": 750000,
+      "subsidy_2": 1350000,
+      "okb": 2250000
+    },
+    "building_cost": {
+      "subsidy": 262500,
+      "okb": 375000
+    }
+  },
+  {
+    "city": "Padang",
+    "island": "Sumatra",
+    "land_price": 1500000,
+    "rent": {
+      "empty": 375000,
+      "subsidy_1": 750000,
+      "subsidy_2": 1350000,
+      "okb": 2250000
+    },
+    "building_cost": {
+      "subsidy": 262500,
+      "okb": 375000
+    }
+  },
+  {
+    "city": "Batam",
+    "island": "Sumatra",
+    "land_price": 1500000,
+    "rent": {
+      "empty": 375000,
+      "subsidy_1": 750000,
+      "subsidy_2": 1350000,
+      "okb": 2250000
+    },
+    "building_cost": {
+      "subsidy": 262500,
+      "okb": 375000
+    }
+  },
+  {
+    "city": "Pontianak",
+    "island": "Kalimantan",
+    "land_price": 2000000,
+    "rent": {
+      "empty": 500000,
+      "subsidy_1": 1000000,
+      "subsidy_2": 1800000,
+      "okb": 3000000
+    },
+    "building_cost": {
+      "subsidy": 350000,
+      "okb": 500000
+    }
+  },
+  {
+    "city": "Palangkaraya",
+    "island": "Kalimantan",
+    "land_price": 2000000,
+    "rent": {
+      "empty": 500000,
+      "subsidy_1": 1000000,
+      "subsidy_2": 1800000,
+      "okb": 3000000
+    },
+    "building_cost": {
+      "subsidy": 350000,
+      "okb": 500000
+    }
+  },
+  {
+    "city": "Balikpapan",
+    "island": "Kalimantan",
+    "land_price": 2000000,
+    "rent": {
+      "empty": 500000,
+      "subsidy_1": 1000000,
+      "subsidy_2": 1800000,
+      "okb": 3000000
+    },
+    "building_cost": {
+      "subsidy": 350000,
+      "okb": 500000
+    }
+  },
+  {
+    "city": "Samarinda",
+    "island": "Kalimantan",
+    "land_price": 2000000,
+    "rent": {
+      "empty": 500000,
+      "subsidy_1": 1000000,
+      "subsidy_2": 1800000,
+      "okb": 3000000
+    },
+    "building_cost": {
+      "subsidy": 350000,
+      "okb": 500000
+    }
+  },
+  {
+    "city": "IKN",
+    "island": "Kalimantan",
+    "land_price": 2000000,
+    "rent": {
+      "empty": 500000,
+      "subsidy_1": 1000000,
+      "subsidy_2": 1800000,
+      "okb": 3000000
+    },
+    "building_cost": {
+      "subsidy": 350000,
+      "okb": 500000
+    }
+  },
+  {
+    "city": "Makassar",
+    "island": "Sulawesi",
+    "land_price": 2500000,
+    "rent": {
+      "empty": 625000,
+      "subsidy_1": 1250000,
+      "subsidy_2": 2250000,
+      "okb": 3750000
+    },
+    "building_cost": {
+      "subsidy": 437500,
+      "okb": 625000
+    }
+  },
+  {
+    "city": "Manado",
+    "island": "Sulawesi",
+    "land_price": 2500000,
+    "rent": {
+      "empty": 625000,
+      "subsidy_1": 1250000,
+      "subsidy_2": 2250000,
+      "okb": 3750000
+    },
+    "building_cost": {
+      "subsidy": 437500,
+      "okb": 625000
+    }
+  },
+  {
+    "city": "Palu",
+    "island": "Sulawesi",
+    "land_price": 2500000,
+    "rent": {
+      "empty": 625000,
+      "subsidy_1": 1250000,
+      "subsidy_2": 2250000,
+      "okb": 3750000
+    },
+    "building_cost": {
+      "subsidy": 437500,
+      "okb": 625000
+    }
+  },
+  {
+    "city": "Gorontalo",
+    "island": "Sulawesi",
+    "land_price": 2500000,
+    "rent": {
+      "empty": 625000,
+      "subsidy_1": 1250000,
+      "subsidy_2": 2250000,
+      "okb": 3750000
+    },
+    "building_cost": {
+      "subsidy": 437500,
+      "okb": 625000
+    }
+  },
+  {
+    "city": "Kendari",
+    "island": "Sulawesi",
+    "land_price": 2500000,
+    "rent": {
+      "empty": 625000,
+      "subsidy_1": 1250000,
+      "subsidy_2": 2250000,
+      "okb": 3750000
+    },
+    "building_cost": {
+      "subsidy": 437500,
+      "okb": 625000
+    }
+  },
+  {
+    "city": "Sorong",
+    "island": "Papua",
+    "land_price": 3000000,
+    "rent": {
+      "empty": 750000,
+      "subsidy_1": 1500000,
+      "subsidy_2": 2700000,
+      "okb": 4500000
+    },
+    "building_cost": {
+      "subsidy": 525000,
+      "okb": 750000
+    }
+  },
+  {
+    "city": "Jayapura",
+    "island": "Papua",
+    "land_price": 3000000,
+    "rent": {
+      "empty": 750000,
+      "subsidy_1": 1500000,
+      "subsidy_2": 2700000,
+      "okb": 4500000
+    },
+    "building_cost": {
+      "subsidy": 525000,
+      "okb": 750000
+    }
+  },
+  {
+    "city": "Manokwari",
+    "island": "Papua",
+    "land_price": 3000000,
+    "rent": {
+      "empty": 750000,
+      "subsidy_1": 1500000,
+      "subsidy_2": 2700000,
+      "okb": 4500000
+    },
+    "building_cost": {
+      "subsidy": 525000,
+      "okb": 750000
+    }
+  },
+  {
+    "city": "Timika",
+    "island": "Papua",
+    "land_price": 3000000,
+    "rent": {
+      "empty": 750000,
+      "subsidy_1": 1500000,
+      "subsidy_2": 2700000,
+      "okb": 4500000
+    },
+    "building_cost": {
+      "subsidy": 525000,
+      "okb": 750000
+    }
+  },
+  {
+    "city": "Merauke",
+    "island": "Papua",
+    "land_price": 3000000,
+    "rent": {
+      "empty": 750000,
+      "subsidy_1": 1500000,
+      "subsidy_2": 2700000,
+      "okb": 4500000
+    },
+    "building_cost": {
+      "subsidy": 525000,
+      "okb": 750000
+    }
+  },
+  {
+    "city": "Surabaya",
+    "island": "Jawa",
+    "land_price": 4000000,
+    "rent": {
+      "empty": 1000000,
+      "subsidy_1": 2000000,
+      "subsidy_2": 3600000,
+      "okb": 6000000
+    },
+    "building_cost": {
+      "subsidy": 700000,
+      "okb": 1000000
+    }
+  },
+  {
+    "city": "Yogyakarta",
+    "island": "Jawa",
+    "land_price": 4000000,
+    "rent": {
+      "empty": 1000000,
+      "subsidy_1": 2000000,
+      "subsidy_2": 3600000,
+      "okb": 6000000
+    },
+    "building_cost": {
+      "subsidy": 700000,
+      "okb": 1000000
+    }
+  },
+  {
+    "city": "Bandung",
+    "island": "Jawa",
+    "land_price": 4000000,
+    "rent": {
+      "empty": 1000000,
+      "subsidy_1": 2000000,
+      "subsidy_2": 3600000,
+      "okb": 6000000
+    },
+    "building_cost": {
+      "subsidy": 700000,
+      "okb": 1000000
+    }
+  },
+  {
+    "city": "Solo",
+    "island": "Jawa",
+    "land_price": 4000000,
+    "rent": {
+      "empty": 1000000,
+      "subsidy_1": 2000000,
+      "subsidy_2": 3600000,
+      "okb": 6000000
+    },
+    "building_cost": {
+      "subsidy": 700000,
+      "okb": 1000000
+    }
+  },
+  {
+    "city": "Jakarta",
+    "island": "Jawa",
+    "land_price": 4000000,
+    "rent": {
+      "empty": 1000000,
+      "subsidy_1": 2000000,
+      "subsidy_2": 3600000,
+      "okb": 6000000
+    },
+    "building_cost": {
+      "subsidy": 700000,
+      "okb": 1000000
+    }
+  }
+]
