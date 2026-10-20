@@ -10,6 +10,8 @@ import { useGame } from "./composables/useGame";
 const {
   state,
   currentPlayer,
+  movementAnimation,
+  isAnimatingMovement,
   startGame,
   throwDice,
   finishTurn,
@@ -35,11 +37,16 @@ const {
 
     <div v-else-if="currentPlayer" class="layout">
       <div class="main-column">
-        <GameBoard :players="state.players" />
+        <GameBoard
+          :players="state.players"
+          :movement-animation="movementAnimation"
+        />
 
         <DiceRoller
           :dice="state.dice"
-          :disabled="state.phase !== 'awaiting_roll'"
+          :disabled="
+            state.phase !== 'awaiting_roll' || isAnimatingMovement
+          "
           @roll="throwDice"
         />
 

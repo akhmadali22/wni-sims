@@ -9,9 +9,12 @@ import {
 } from "../data/board";
 
 import type { Player } from "../types/game";
+import type { PawnMovementAnimation } from "../animation/pawnMovement";
+import { getPawnSlotOffset } from "../animation/pawnMovement";
 
 const props = defineProps<{
   players: Player[];
+  movementAnimation: PawnMovementAnimation | null;
 }>();
 
 const WIDTH = 1200;
@@ -422,6 +425,12 @@ const SPECIAL_TILE_COLORS: Record<
   ticket: { color: "#c43d55", lightColor: "#fde5ea" },
 };
 
+function getVisualPosition(player: Player) {
+  return props.movementAnimation?.playerId === player.id
+    ? props.movementAnimation.currentTile
+    : player.position;
+}
+
 const positionedTiles = computed(() =>
   board.map((tile) => {
     const corner = CORNERS.find(
@@ -462,8 +471,36 @@ const positionedTiles = computed(() =>
       isCorner,
       cornerPath: isCorner && corner ? getCornerPath(corner) : "",
       players: props.players.filter(
-        (player) => player.position === tile.index,
+        (player) => getVisualPosition(player) === tile.index,
       ),
+    };
+  }),
+);
+
+const positionedPawns = computed(() =>
+  props.players.map((player, playerIndex) => {
+    const visualPosition = getVisualPosition(player);
+    const tile = positionedTiles.value.find(
+      (candidate) => candidate.index === visualPosition,
+    );
+    const offset = getPawnSlotOffset(playerIndex);
+    const isMoving = props.movementAnimation?.playerId === player.id;
+
+    return {
+      ...player,
+      visualPosition,
+      x: (tile?.x ?? CENTER.x) + offset.x,
+      y: (tile?.y ?? CENTER.y) + offset.y + 20,
+      isMoving,
+      currentStep: isMoving
+        ? props.movementAnimation?.currentStep ?? 0
+        : 0,
+      isFinalHop: isMoving
+        ? props.movementAnimation?.isFinalHop ?? false
+        : false,
+      hopDurationMs: isMoving
+        ? props.movementAnimation?.hopDurationMs ?? 0
+        : 0,
     };
   }),
 );
@@ -703,28 +740,6 @@ const tilePathPoints = computed(() => {
             }}
           </text>
 
-          <!-- Pion pemain -->
-          <g
-            v-for="(player, playerIndex) in tile.players"
-            :key="player.id"
-          >
-            <circle
-              :cx="
-                (
-                  playerIndex -
-                  (tile.players.length - 1) / 2
-                ) * 11
-              "
-              cy="18"
-              r="4.5"
-              :fill="player.color"
-              stroke="#ffffff"
-              stroke-width="1.5"
-            >
-              <title>{{ player.name }}</title>
-            </circle>
-          </g>
-
           <title>
             {{ tile.name }}{{ tile.landmark ? ` — ${tile.landmark}` : '' }}
             | Pulau {{ tile.island }}
@@ -733,6 +748,50 @@ const tilePathPoints = computed(() => {
               || "Tidak ada pemain"
             }}
           </title>
+        </g>
+
+        <!-- Pion dirender terpisah agar dapat bergerak antarpeta. -->
+        <g class="pawn-layer" aria-label="Posisi pion pemain">
+          <g
+            v-for="pawn in positionedPawns"
+            :key="pawn.id"
+            class="pawn-position"
+            :class="{ 'pawn-position--moving': pawn.isMoving }"
+            :data-player-id="pawn.id"
+            :data-tile-index="pawn.visualPosition"
+            :data-movement-step="pawn.currentStep"
+            :style="{
+              transform: `translate(${pawn.x}px, ${pawn.y}px)`,
+              transitionDuration: `${pawn.hopDurationMs}ms`,
+            }"
+          >
+            <g
+              :key="`${pawn.id}-${pawn.currentStep}`"
+              class="pawn-marker"
+              :class="{
+                'pawn-marker--hopping': pawn.isMoving && pawn.currentStep > 0,
+                'pawn-marker--final': pawn.isFinalHop,
+              }"
+              :style="{
+                animationDuration: `${pawn.hopDurationMs}ms`,
+              }"
+            >
+              <circle
+                r="11"
+                :fill="pawn.color"
+                stroke="#ffffff"
+                stroke-width="3"
+              />
+              <text
+                y="3.5"
+                text-anchor="middle"
+                class="pawn-initial"
+              >
+                {{ pawn.name.slice(0, 1).toUpperCase() }}
+              </text>
+              <title>{{ pawn.name }}</title>
+            </g>
+          </g>
         </g>
       </svg>
     </div>
@@ -841,6 +900,79 @@ const tilePathPoints = computed(() => {
 
 .tile-name--compact {
   font-size: 7.5px;
+}
+
+.pawn-layer {
+  pointer-events: none;
+}
+
+.pawn-position {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.22, 0.78, 0.28, 1);
+  will-change: transform;
+}
+
+.pawn-marker {
+  filter: drop-shadow(0 3px 2px rgb(28 55 40 / 24%));
+  transform-origin: center;
+}
+
+.pawn-marker--hopping {
+  animation-name: pawn-hop;
+  animation-timing-function: cubic-bezier(0.2, 0.72, 0.24, 1);
+}
+
+.pawn-marker--final {
+  animation-name: pawn-final-hop;
+}
+
+.pawn-initial {
+  fill: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+@keyframes pawn-hop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  46% {
+    transform: translateY(-26px) scale(1.08);
+  }
+  82% {
+    transform: translateY(1px) scale(1.02, 0.96);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pawn-final-hop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  44% {
+    transform: translateY(-32px) scale(1.14);
+  }
+  78% {
+    transform: translateY(2px) scale(1.12, 0.9);
+  }
+  100% {
+    transform: translateY(0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pawn-position {
+    transition-duration: 0ms !important;
+  }
+
+  .pawn-marker--hopping,
+  .pawn-marker--final {
+    animation: none;
+  }
 }
 
 .center-eyebrow {
