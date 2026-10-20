@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import GameBoard from "./components/GameBoard.vue";
 import PlayerPanel from "./components/PlayerPanel.vue";
 import DiceRoller from "./components/DiceRoller.vue";
@@ -17,6 +18,44 @@ const {
   finishTurn,
   finishPrisonTurn,
 } = useGame();
+
+onMounted(() => {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("autoStart")) {
+      const rawCount = parseInt(params.get("autoStart") || "2", 10);
+      const count = Math.min(5, Math.max(2, Number.isNaN(rawCount) ? 2 : rawCount));
+      const defaultNames = ["Andi", "Budi", "Citra", "Dewi", "Eko"];
+      startGame(defaultNames.slice(0, count));
+
+      if (params.has("tile")) {
+        const targetTile = parseInt(params.get("tile") || "0", 10);
+        if (state.value && !Number.isNaN(targetTile)) {
+          state.value = {
+            ...state.value,
+            players: state.value.players.map((p) => ({
+              ...p,
+              position: targetTile,
+            })),
+          };
+        }
+      }
+
+      if (params.has("testHop")) {
+        const step = parseInt(params.get("testHop") || "3", 10);
+        movementAnimation.value = {
+          playerId: "player-1",
+          path: [0, 1, 2, 3, 4],
+          currentTile: step,
+          currentStep: step,
+          totalSteps: 4,
+          isFinalHop: false,
+          hopDurationMs: 150,
+        };
+      }
+    }
+  }
+});
 </script>
 
 <template>
@@ -48,6 +87,7 @@ const {
         <GameBoard
           :players="state.players"
           :movement-animation="movementAnimation"
+          :active-player-id="currentPlayer.id"
         />
       </div>
 
@@ -90,7 +130,7 @@ const {
       </aside>
     </div>
 
-    <footer>
+    <footer class="app-footer">
       Aturan, urutan papan, kartu, dan harga properti masih dalam tahap
       verifikasi. Prototipe ini belum menerapkan seluruh aturan resmi.
     </footer>

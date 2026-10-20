@@ -10,11 +10,15 @@ import {
 
 import type { Player } from "../types/game";
 import type { PawnMovementAnimation } from "../animation/pawnMovement";
-import { getPawnSlotOffset } from "../animation/pawnMovement";
+import {
+  getAdaptiveTilePawnOffset,
+  getAdaptiveCornerPawnOffset,
+} from "../animation/pawnMovement";
 
 const props = defineProps<{
   players: Player[];
   movementAnimation: PawnMovementAnimation | null;
+  activePlayerId?: string;
 }>();
 
 const WIDTH = 1100;
@@ -24,13 +28,12 @@ const CENTER = { x: WIDTH / 2, y: 490 };
 
 /*
  * Vertex pentagon:
- * 0 = atas
- * 1 = kanan atas
- * 2 = kanan bawah
- * 3 = kiri bawah
- * 4 = kiri atas
+ * 0 = atas (Pengadilan)
+ * 1 = kanan atas (Parkiran Pungli)
+ * 2 = kanan bawah (Start)
+ * 3 = kiri bawah (Penjara)
+ * 4 = kiri atas (Pajak Tahunan)
  */
-// Pentagon: lima vertex dengan orientasi konsisten.
 const BOARD_CENTER = CENTER;
 const OUTER_RADIUS = 465;
 const OUTLINE_CORNER_RADIUS = 32;
@@ -40,7 +43,7 @@ const TILE_GAP = 4;
 
 // Vertex pertama di atas, lalu searah jarum jam.
 const vertices = Array.from({ length: 5 }, (_, index) => {
-  const angle = (-90 + index * 72) * Math.PI / 180;
+  const angle = ((-90 + index * 72) * Math.PI) / 180;
 
   return {
     x: BOARD_CENTER.x + OUTER_RADIUS * Math.cos(angle),
@@ -104,6 +107,13 @@ function splitTileName(name: string) {
   return [name.slice(0, midpoint), name.slice(midpoint)];
 }
 
+function splitCornerName(name: string): string[] {
+  if (name.includes(" ")) {
+    return name.split(" ");
+  }
+  return [name];
+}
+
 const roundedCorners = vertices.map((vertex, index) => ({
   vertex,
   start: moveTowards(
@@ -141,9 +151,7 @@ const edgeSegments = vertices.map((vertex, index) => {
 });
 
 /*
- * Sudut ditempatkan sedikit ke dalam pentagon.
- * Petak sisi ditempatkan di tengah interval sisi.
- * Validasi mencegah indeks tidak valid menghasilkan undefined.
+ * Sudut ditempatkan konsisten di sepanjang radius pentagon.
  */
 function getCornerPosition(corner: (typeof CORNERS)[number]) {
   const vertex = vertices[corner.vertex];
@@ -158,123 +166,111 @@ function getCornerPosition(corner: (typeof CORNERS)[number]) {
   return interpolate(vertex, CENTER, CORNER_INSET_RATIO);
 }
 
-
 /*
- * Membuat petak corner sebagai tikungan segi empat.
- * Kedua batas panjang melengkung, sedangkan ujungnya mengikuti
- * arah sisi yang masuk dan keluar. Koordinat path relatif ke pusat corner.
+ * Geometri petak sudut (corner tile):
+ * Membentuk sektor sudut pentagon yang terintegrasi rapi dengan outline luar pentagon,
+ * tanpa celah kosong, serta bertemu petak sisi bertetangga dengan celah seragam TILE_GAP.
  */
 function getCornerPath(corner: (typeof CORNERS)[number]): string {
   const current = getCornerPosition(corner);
+  const vertex = vertices[corner.vertex];
 
-  const previousCorner = CORNERS.find(
-    (item) => item.vertex === (corner.vertex + vertices.length - 1)
-      % vertices.length,
+  const prevCorner = CORNERS.find(
+    (item) => item.vertex === (corner.vertex + 4) % 5,
   );
   const nextCorner = CORNERS.find(
-    (item) => item.vertex === (corner.vertex + 1) % vertices.length,
+    (item) => item.vertex === (corner.vertex + 1) % 5,
   );
 
-  if (!previousCorner || !nextCorner) {
+  if (!prevCorner || !nextCorner || !vertex) {
     console.error(`Sudut tetangga tidak ditemukan: ${corner.index}`);
     return "";
   }
 
-  const previous = getCornerPosition(previousCorner);
+  const previous = getCornerPosition(prevCorner);
   const next = getCornerPosition(nextCorner);
 
   const normalize = (x: number, y: number) => {
-    const length = Math.hypot(x, y) || 1;
-    return { x: x / length, y: y / length };
+    const len = Math.hypot(x, y) || 1;
+    return { x: x / len, y: y / len };
   };
 
-  const incoming = normalize(
-    current.x - previous.x,
-    current.y - previous.y,
-  );
-  const outgoing = normalize(
-    next.x - current.x,
-    next.y - current.y,
-  );
+  const incoming = normalize(current.x - previous.x, current.y - previous.y);
+  const outgoing = normalize(next.x - current.x, next.y - current.y);
 
-  const intervalCount = PROVISIONAL_TILES_PER_SIDE + 1;
-  const halfIn = (
-    Math.hypot(
-    current.x - previous.x,
-    current.y - previous.y,
-    ) / intervalCount - TILE_GAP
-  ) / 2;
-  const halfOut = (
-    Math.hypot(
-    next.x - current.x,
-    next.y - current.y,
-    ) / intervalCount - TILE_GAP
-  ) / 2;
-
-  const halfWidth = TRACK_HALF_HEIGHT;
-
-  // Normal ke arah luar pentagon untuk urutan vertex searah jarum jam.
+  // Normal ke arah luar pentagon
   const outerIn = { x: incoming.y, y: -incoming.x };
   const outerOut = { x: outgoing.y, y: -outgoing.x };
 
-  const start = {
+  const intervalCount = PROVISIONAL_TILES_PER_SIDE + 1;
+  const inDist = Math.hypot(current.x - previous.x, current.y - previous.y);
+  const outDist = Math.hypot(next.x - current.x, next.y - current.y);
+
+  const halfIn = (inDist / intervalCount - TILE_GAP) / 2;
+  const halfOut = (outDist / intervalCount - TILE_GAP) / 2;
+
+  const halfWidth = TRACK_HALF_HEIGHT;
+
+  // Ujung sisi incoming (tegak lurus terhadap incoming)
+  const midIn = {
     x: current.x - incoming.x * halfIn,
     y: current.y - incoming.y * halfIn,
   };
-  const end = {
+  const inOuter = {
+    x: midIn.x + outerIn.x * halfWidth,
+    y: midIn.y + outerIn.y * halfWidth,
+  };
+  const inInner = {
+    x: midIn.x - outerIn.x * halfWidth,
+    y: midIn.y - outerIn.y * halfWidth,
+  };
+
+  // Ujung sisi outgoing (tegak lurus terhadap outgoing)
+  const midOut = {
     x: current.x + outgoing.x * halfOut,
     y: current.y + outgoing.y * halfOut,
   };
-
-  const handleIn = halfIn * 1.15;
-  const handleOut = halfOut * 1.15;
-
-  const c1 = {
-    x: start.x + incoming.x * handleIn,
-    y: start.y + incoming.y * handleIn,
+  const outOuter = {
+    x: midOut.x + outerOut.x * halfWidth,
+    y: midOut.y + outerOut.y * halfWidth,
   };
-  const c2 = {
-    x: end.x - outgoing.x * handleOut,
-    y: end.y - outgoing.y * handleOut,
+  const outInner = {
+    x: midOut.x - outerOut.x * halfWidth,
+    y: midOut.y - outerOut.y * halfWidth,
   };
 
-  const add = (p: { x: number; y: number }, n: { x: number; y: number }, scale: number) => ({
-    x: p.x + n.x * scale,
-    y: p.y + n.y * scale,
-  });
+  // Vektor radial ke arah luar (dari CENTER menuju vertex)
+  const radOut = normalize(vertex.x - CENTER.x, vertex.y - CENTER.y);
 
-  const subtractCenter = (p: { x: number; y: number }) => ({
-    x: p.x - current.x,
-    y: p.y - current.y,
-  });
+  // Apex luar corner berada di radius yang konsisten dengan margin petak sisi ke border papan
+  const outerApexRadius = 451.5;
+  const outerApex = {
+    x: CENTER.x + radOut.x * outerApexRadius,
+    y: CENTER.y + radOut.y * outerApexRadius,
+  };
 
-  const points = [
-    add(start, outerIn, halfWidth),
-    add(c1, outerIn, halfWidth),
-    add(c2, outerOut, halfWidth),
-    add(end, outerOut, halfWidth),
-    add(end, outerOut, -halfWidth),
-    add(c2, outerOut, -halfWidth),
-    add(c1, outerIn, -halfWidth),
-    add(start, outerIn, -halfWidth),
-  ].map(subtractCenter);
+  // Lengkungan dalam corner
+  const innerApexRadius = 380.5;
+  const innerApex = {
+    x: CENTER.x + radOut.x * innerApexRadius,
+    y: CENTER.y + radOut.y * innerApexRadius,
+  };
 
+  // Koordinat relatif terhadap pusat corner
   const fmt = (p: { x: number; y: number }) =>
-    `${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+    `${(p.x - current.x).toFixed(2)} ${(p.y - current.y).toFixed(2)}`;
 
   return [
-    `M ${fmt(points[0])}`,
-    `C ${fmt(points[1])}, ${fmt(points[2])}, ${fmt(points[3])}`,
-    `L ${fmt(points[4])}`,
-    `C ${fmt(points[5])}, ${fmt(points[6])}, ${fmt(points[7])}`,
+    `M ${fmt(inOuter)}`,
+    `Q ${fmt(outerApex)}, ${fmt(outOuter)}`,
+    `L ${fmt(outInner)}`,
+    `Q ${fmt(innerApex)}, ${fmt(inInner)}`,
     "Z",
   ].join(" ");
 }
 
 /*
- * Setiap sisi dibatasi oleh pusat dua petak sudut.
- * Petak sisi dibagi rata di antara kedua pusat tersebut.
- * Rotation mengikuti arah sisi agar bentuk petak mengikuti jalur.
+ * Posisi petak pada sisi dan corner.
  */
 function getTilePosition(
   side: number,
@@ -282,21 +278,12 @@ function getTilePosition(
   tileIndex: number,
   isCorner: boolean,
 ) {
-  const corner = CORNERS.find(
-    (item) => item.index === tileIndex,
-  );
+  const corner = CORNERS.find((item) => item.index === tileIndex);
 
   if (isCorner || corner) {
     if (!corner) {
-      console.error(
-        `Definisi sudut tidak valid untuk petak ${tileIndex}`,
-      );
-
-      return {
-        ...CENTER,
-        rotation: 0,
-        trackWidth: 58,
-      };
+      console.error(`Definisi sudut tidak valid untuk petak ${tileIndex}`);
+      return { ...CENTER, rotation: 0, trackWidth: 58 };
     }
 
     return {
@@ -306,40 +293,19 @@ function getTilePosition(
     };
   }
 
-  if (
-    !Number.isInteger(side) ||
-    side < 0 ||
-    side >= vertices.length
-  ) {
-    console.error(
-      `Indeks sisi tidak valid untuk petak ${tileIndex}: ${side}`,
-    );
-
-    return {
-      ...CENTER,
-      rotation: 0,
-      trackWidth: 40,
-    };
+  if (!Number.isInteger(side) || side < 0 || side >= vertices.length) {
+    console.error(`Indeks sisi tidak valid untuk petak ${tileIndex}: ${side}`);
+    return { ...CENTER, rotation: 0, trackWidth: 40 };
   }
 
-  const startCorner = CORNERS.find(
-    (item) => item.vertex === side,
-  );
-
+  const startCorner = CORNERS.find((item) => item.vertex === side);
   const endCorner = CORNERS.find(
     (item) => item.vertex === (side + 1) % vertices.length,
   );
 
   if (!startCorner || !endCorner) {
-    console.error(
-      `Sudut pembatas tidak ditemukan untuk sisi ${side}`,
-    );
-
-    return {
-      ...CENTER,
-      rotation: 0,
-      trackWidth: 40,
-    };
+    console.error(`Sudut pembatas tidak ditemukan untuk sisi ${side}`);
+    return { ...CENTER, rotation: 0, trackWidth: 40 };
   }
 
   const startPoint = getCornerPosition(startCorner);
@@ -350,31 +316,14 @@ function getTilePosition(
   const segmentLength = Math.hypot(dx, dy);
 
   const intervalCount = PROVISIONAL_TILES_PER_SIDE + 1;
-
   const safeSidePosition = Math.max(
     0,
-    Math.min(
-      sidePosition,
-      PROVISIONAL_TILES_PER_SIDE - 1,
-    ),
+    Math.min(sidePosition, PROVISIONAL_TILES_PER_SIDE - 1),
   );
 
   const ratio = (safeSidePosition + 1) / intervalCount;
-
-  const position = interpolate(
-    startPoint,
-    endPoint,
-    ratio,
-  );
-
-  const rotation = getReadableRotation(
-    Math.atan2(dy, dx) * 180 / Math.PI,
-  );
-
-  /*
-   * Lebar petak mengikuti jarak pusat antarpeta.
-   * Tambahan 1 unit mencegah celah kecil akibat pembulatan.
-   */
+  const position = interpolate(startPoint, endPoint, ratio);
+  const rotation = getReadableRotation((Math.atan2(dy, dx) * 180) / Math.PI);
   const trackWidth = segmentLength / intervalCount - TILE_GAP;
 
   return {
@@ -383,6 +332,7 @@ function getTilePosition(
     trackWidth,
   };
 }
+
 function getIslandLabel(side: number) {
   const start = vertices[side];
   const end = vertices[(side + 1) % vertices.length];
@@ -397,7 +347,7 @@ function getIslandLabel(side: number) {
   const length = Math.hypot(dx, dy) || 1;
   const offset = 58;
   const rotation = getReadableRotation(
-    Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI,
+    (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI,
   );
 
   return {
@@ -407,10 +357,7 @@ function getIslandLabel(side: number) {
   };
 }
 
-const CORNER_COLORS: Record<
-  string,
-  { color: string; lightColor: string }
-> = {
+const CORNER_COLORS: Record<string, { color: string; lightColor: string }> = {
   start: {
     color: "#237a4b",
     lightColor: "#e1f2e6",
@@ -433,10 +380,7 @@ const CORNER_COLORS: Record<
   },
 };
 
-const SPECIAL_TILE_COLORS: Record<
-  string,
-  { color: string; lightColor: string }
-> = {
+const SPECIAL_TILE_COLORS: Record<string, { color: string; lightColor: string }> = {
   destiny: { color: "#087f8c", lightColor: "#d9f2f3" },
   disaster: { color: "#d45d1f", lightColor: "#fff0df" },
   toll: { color: "#427aa1", lightColor: "#e1eff8" },
@@ -451,10 +395,7 @@ function getVisualPosition(player: Player) {
 
 const positionedTiles = computed(() =>
   board.map((tile) => {
-    const corner = CORNERS.find(
-      (item) => item.index === tile.index,
-    );
-
+    const corner = CORNERS.find((item) => item.index === tile.index);
     const isCorner = Boolean(tile.isCorner || corner);
 
     const position = getTilePosition(
@@ -464,9 +405,7 @@ const positionedTiles = computed(() =>
       isCorner,
     );
 
-    const island = ISLANDS.find(
-      (item) => item.side === tile.side,
-    );
+    const island = ISLANDS.find((item) => item.side === tile.side);
 
     const fallbackPalette = {
       color: "#596579",
@@ -482,13 +421,35 @@ const positionedTiles = computed(() =>
           }
         : SPECIAL_TILE_COLORS[tile.type] ?? fallbackPalette;
 
+    let cornerIconPos = { x: 0, y: -10 };
+    let cornerTextPos = { x: 0, y: 7.5 };
+
+    if (isCorner && corner) {
+      const vertex = vertices[corner.vertex] ?? CENTER;
+      const radLen = Math.hypot(vertex.x - CENTER.x, vertex.y - CENTER.y) || 1;
+      const radX = (vertex.x - CENTER.x) / radLen;
+      const radY = (vertex.y - CENTER.y) / radLen;
+
+      cornerIconPos = {
+        x: +(radX * 12).toFixed(2),
+        y: +(radY * 12).toFixed(2),
+      };
+      cornerTextPos = {
+        x: +(-radX * 1).toFixed(2),
+        y: +(-radY * 1).toFixed(2),
+      };
+    }
+
     return {
       ...tile,
       ...position,
       ...palette,
       nameLines: splitTileName(tile.name),
+      cornerTextLines: splitCornerName(tile.name),
       isCorner,
       cornerPath: isCorner && corner ? getCornerPath(corner) : "",
+      cornerIconPos,
+      cornerTextPos,
       players: props.players.filter(
         (player) => getVisualPosition(player) === tile.index,
       ),
@@ -496,44 +457,88 @@ const positionedTiles = computed(() =>
   }),
 );
 
-const positionedPawns = computed(() =>
-  props.players.map((player, playerIndex) => {
+/*
+ * Menghitung koordinat pion dengan formasi adaptif di dalam petak.
+ * Petak sisi: ditransformasikan sesuai tile.rotation (lokal petak).
+ * Petak corner: ditransformasikan sepanjang sumbu radial/tangen sudut.
+ */
+const positionedPawns = computed(() => {
+  const playersByTile = new Map<number, Player[]>();
+  for (const player of props.players) {
+    const tilePos = getVisualPosition(player);
+    const list = playersByTile.get(tilePos) ?? [];
+    list.push(player);
+    playersByTile.set(tilePos, list);
+  }
+
+  return props.players.map((player) => {
     const visualPosition = getVisualPosition(player);
     const tile = positionedTiles.value.find(
       (candidate) => candidate.index === visualPosition,
     );
-    const offset = getPawnSlotOffset(playerIndex);
+    const tilePlayers = playersByTile.get(visualPosition) ?? [player];
+    const indexInTile = tilePlayers.findIndex((p) => p.id === player.id);
+    const totalInTile = tilePlayers.length;
+
+    let x = tile?.x ?? CENTER.x;
+    let y = tile?.y ?? CENTER.y;
+
+    if (tile) {
+      if (tile.isCorner) {
+        const corner = CORNERS.find((c) => c.index === tile.index);
+        const vertexIndex = corner ? corner.vertex : 0;
+        const vertex = vertices[vertexIndex] ?? CENTER;
+
+        // Vektor outward dari CENTER ke vertex
+        const radLen = Math.hypot(vertex.x - CENTER.x, vertex.y - CENTER.y) || 1;
+        const outX = (vertex.x - CENTER.x) / radLen;
+        const outY = (vertex.y - CENTER.y) / radLen;
+        // Vektor inward (ke dalam pentagon)
+        const inX = -outX;
+        const inY = -outY;
+        // Vektor tangensial tegak lurus inward
+        const tanX = -inY;
+        const tanY = inX;
+
+        const offset = getAdaptiveCornerPawnOffset(indexInTile, totalInTile);
+        x = tile.x + offset.x * tanX + offset.y * inX;
+        y = tile.y + offset.x * tanY + offset.y * inY;
+      } else {
+        const rad = (tile.rotation * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        const offset = getAdaptiveTilePawnOffset(indexInTile, totalInTile);
+        x = tile.x + offset.x * cos - offset.y * sin;
+        y = tile.y + offset.x * sin + offset.y * cos;
+      }
+    }
+
     const isMoving = props.movementAnimation?.playerId === player.id;
+    const isActive = props.activePlayerId === player.id;
 
     return {
       ...player,
       visualPosition,
-      x: (tile?.x ?? CENTER.x) + offset.x,
-      y: (tile?.y ?? CENTER.y) + offset.y + 24,
+      x,
+      y,
       isMoving,
-      currentStep: isMoving
-        ? props.movementAnimation?.currentStep ?? 0
-        : 0,
-      isFinalHop: isMoving
-        ? props.movementAnimation?.isFinalHop ?? false
-        : false,
-      hopDurationMs: isMoving
-        ? props.movementAnimation?.hopDurationMs ?? 0
-        : 0,
+      isActive,
+      currentStep: isMoving ? props.movementAnimation?.currentStep ?? 0 : 0,
+      isFinalHop: isMoving ? props.movementAnimation?.isFinalHop ?? false : false,
+      hopDurationMs: isMoving ? props.movementAnimation?.hopDurationMs ?? 0 : 0,
     };
-  }),
-);
+  });
+});
 
 /*
  * Jalur penghubung mengikuti urutan indeks papan.
- * Titik terakhir kembali ke titik pertama agar putaran tertutup.
  */
 const tilePathPoints = computed(() => {
   const points = positionedTiles.value.map((tile) => `${tile.x},${tile.y}`);
   if (points.length > 0) points.push(points[0]);
   return points.join(" ");
 });
-
 </script>
 
 <template>
@@ -541,15 +546,13 @@ const tilePathPoints = computed(() => {
     <header class="board-heading">
       <div>
         <h2>Papan WNI Simulator</h2>
-
         <p class="notice">
-          Setiap sisi mewakili satu pulau.
-          Pembagian petak masih provisional.
+          Lima pulau Nusantara dalam satu putaran pentagonal.
         </p>
       </div>
 
       <span class="tile-count">
-        {{ board.length }} petak sementara
+        {{ board.length }} petak
       </span>
     </header>
 
@@ -568,12 +571,12 @@ const tilePathPoints = computed(() => {
             x2="1"
             y2="1"
           >
-            <stop offset="0%" stop-color="#f6faf7" />
-            <stop offset="100%" stop-color="#e1ece4" />
+            <stop offset="0%" stop-color="#f8fbf9" />
+            <stop offset="100%" stop-color="#e3eee7" />
           </linearGradient>
         </defs>
 
-        <!-- Dasar papan -->
+        <!-- Dasar papan pentagon -->
         <path
           :d="roundedPolygonPath"
           fill="url(#board-background)"
@@ -591,11 +594,11 @@ const tilePathPoints = computed(() => {
           stroke-width="4"
           stroke-linecap="round"
           stroke-linejoin="round"
-          opacity="0.28"
+          opacity="0.25"
           pointer-events="none"
         />
 
-        <!-- Batas pemisah setiap sisi -->
+        <!-- Batas aksen setiap sisi pulau -->
         <g>
           <line
             v-for="(edge, index) in edgeSegments"
@@ -605,26 +608,26 @@ const tilePathPoints = computed(() => {
             :x2="edge.end.x"
             :y2="edge.end.y"
             :stroke="ISLANDS[index].color"
-            stroke-width="10"
+            stroke-width="9"
             stroke-linecap="round"
           />
         </g>
 
-        <!-- Area tengah -->
+        <!-- Area tengah pentagon -->
         <g
           class="board-center"
           :transform="`translate(${CENTER.x} ${CENTER.y})`"
         >
           <rect
-            x="-210" y="-125" width="420" height="250" rx="30"
+            x="-200" y="-120" width="400" height="240" rx="26"
             fill="#ffffff"
             stroke="#cbded1"
-            stroke-width="4"
+            stroke-width="3.5"
           />
 
           <text
             x="0"
-            y="-72"
+            y="-68"
             text-anchor="middle"
             class="center-eyebrow"
           >
@@ -633,7 +636,7 @@ const tilePathPoints = computed(() => {
 
           <text
             x="0"
-            y="-15"
+            y="-14"
             text-anchor="middle"
             class="center-title"
           >
@@ -641,30 +644,30 @@ const tilePathPoints = computed(() => {
           </text>
 
           <line
-            x1="-125"
+            x1="-120"
             y1="10"
-            x2="125"
+            x2="120"
             y2="10"
             stroke="#d7e5dc"
-            stroke-width="3"
+            stroke-width="2.5"
           />
 
           <text
             x="0"
-            y="48"
+            y="46"
             text-anchor="middle"
             class="center-subtitle"
           >
-            Lima pulau, satu papan
+            Lima pulau, satu papan permainan
           </text>
 
           <text
             x="0"
-            y="82"
+            y="76"
             text-anchor="middle"
             class="center-subtitle"
           >
-            Nasib ditentukan oleh permainan
+            Bertahan hidup, bangun strategi ekonomi
           </text>
         </g>
 
@@ -692,81 +695,136 @@ const tilePathPoints = computed(() => {
           :key="tile.id"
           :transform="`translate(${tile.x} ${tile.y}) rotate(${tile.rotation})`"
           class="tile-group"
+          :data-tile-index="tile.index"
+          :data-tile-type="tile.type"
         >
+          <!-- Bentuk petak corner -->
           <path
             v-if="tile.isCorner"
             :d="tile.cornerPath"
-            :fill="
-              tile.type === 'start'
-                ? tile.color
-                : tile.lightColor
-            "
+            :fill="tile.type === 'start' ? tile.color : tile.lightColor"
             :stroke="tile.color"
             stroke-width="3"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
+
+          <!-- Bentuk petak sisi -->
           <rect
             v-else
             :x="-tile.trackWidth / 2"
             :y="-TRACK_HALF_HEIGHT"
             :width="tile.trackWidth"
             :height="TRACK_HALF_HEIGHT * 2"
-            rx="10"
-            :fill="
-              tile.type === 'start'
-                ? tile.color
-                : tile.lightColor
-            "
+            rx="9"
+            :fill="tile.lightColor"
             :stroke="tile.color"
             stroke-width="3"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
 
-          <text
-            x="0"
-            y="-19"
-            text-anchor="middle"
-            class="tile-symbol"
-            :fill="
-              tile.type === 'start'
-                ? '#ffffff'
-                : tile.color
-            "
-          >
-            {{ tile.symbol || tile.index + 1 }}
-          </text>
+          <!-- Konten khusus Petak Corner -->
+          <g v-if="tile.isCorner" class="corner-content">
+            <!-- Ikon Tematik Corner -->
+            <g :transform="`translate(${tile.cornerIconPos.x}, ${tile.cornerIconPos.y})`">
+              <!-- START (index 0) -->
+              <g v-if="tile.type === 'start'">
+                <line x1="-8" y1="-12" x2="-8" y2="12" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M-8,-12 L6,-7 L-8,-2 Z" fill="#ffffff" />
+                <path d="M-8,-12 L-1,-9.5 L-1,-4.5 L-8,-7 Z" fill="#f6c851" />
+                <circle cx="-8" cy="-12" r="1.8" fill="#f6c851" />
+              </g>
 
-          <text
-            x="0"
-            :y="tile.nameLines.length > 1 ? -3 : 2"
-            text-anchor="middle"
-            class="tile-name"
-            :class="{
-              'tile-name--compact': tile.nameLines.some(
-                (line) => line.length > 7,
-              ),
-            }"
-            :fill="
-              tile.type === 'start'
-                ? '#ffffff'
-                : '#26352c'
-            "
-          >
-            <tspan
-              v-for="(line, lineIndex) in tile.nameLines"
-              :key="`${tile.id}-line-${lineIndex}`"
-              x="0"
-              :dy="lineIndex === 0 ? 0 : 11"
+              <!-- PENJARA (index 9) -->
+              <g v-else-if="tile.type === 'jail'">
+                <rect x="-12" y="-12" width="24" height="23" rx="4" fill="#ffffff" stroke="#596579" stroke-width="2" />
+                <line x1="-6" y1="-11" x2="-6" y2="10" stroke="#596579" stroke-width="2" stroke-linecap="round" />
+                <line x1="0" y1="-11" x2="0" y2="10" stroke="#596579" stroke-width="2" stroke-linecap="round" />
+                <line x1="6" y1="-11" x2="6" y2="10" stroke="#596579" stroke-width="2" stroke-linecap="round" />
+                <line x1="-11" y1="-1" x2="11" y2="-1" stroke="#596579" stroke-width="2" />
+              </g>
+
+              <!-- PAJAK TAHUNAN (index 18) -->
+              <g v-else-if="tile.type === 'tax'">
+                <path d="M-10,-12 L4,-12 L10,-6 L10,12 L-10,12 Z" fill="#ffffff" stroke="#b7791f" stroke-width="2" stroke-linejoin="round" />
+                <path d="M4,-12 L4,-6 L10,-6" fill="#fce4b3" stroke="#b7791f" stroke-width="1.8" stroke-linejoin="round" />
+                <line x1="-6" y1="-4" x2="1" y2="-4" stroke="#b7791f" stroke-width="1.8" stroke-linecap="round" />
+                <line x1="-6" y1="1" x2="6" y2="1" stroke="#b7791f" stroke-width="1.8" stroke-linecap="round" />
+                <line x1="-6" y1="6" x2="3" y2="6" stroke="#b7791f" stroke-width="1.8" stroke-linecap="round" />
+              </g>
+
+              <!-- PENGADILAN (index 27) -->
+              <g v-else-if="tile.type === 'court'">
+                <rect x="-12" y="9" width="24" height="3" rx="1.5" fill="#7452a3" />
+                <line x1="4" y1="7" x2="-5" y2="-4" stroke="#7452a3" stroke-width="2.6" stroke-linecap="round" />
+                <rect x="-13" y="-12" width="12" height="7" rx="2" transform="rotate(-40 -7 -9)" fill="#7452a3" stroke="#ffffff" stroke-width="1.2" />
+              </g>
+
+              <!-- PARKIRAN PUNGLI (index 36) -->
+              <g v-else-if="tile.type === 'pungli'">
+                <rect x="-12" y="-12" width="24" height="23" rx="5" fill="#b83f48" stroke="#ffffff" stroke-width="1.4" />
+                <path d="M-4,7 L-4,-6 L2,-6 C5,-6 7,-4.2 7,-1.5 C7,1.2 5,3 2,3 L-1.5,3 L-1.5,7 Z M-1.5,0.8 L1.6,0.8 C3,0.8 4.2,0.1 4.2,-1.5 C4.2,-3.1 3,-3.8 1.6,-3.8 L-1.5,-3.8 Z" fill="#ffffff" />
+              </g>
+            </g>
+
+            <!-- Nama Corner -->
+            <text
+              :x="tile.cornerTextPos.x"
+              :y="tile.cornerTextLines.length > 1 ? tile.cornerTextPos.y - 3.5 : tile.cornerTextPos.y"
+              text-anchor="middle"
+              class="corner-name"
+              :fill="tile.type === 'start' ? '#ffffff' : tile.color"
             >
-              {{ line }}
-            </tspan>
-          </text>
+              <tspan
+                v-for="(line, lineIdx) in tile.cornerTextLines"
+                :key="lineIdx"
+                :x="tile.cornerTextPos.x"
+                :dy="lineIdx === 0 ? 0 : 8"
+              >
+                {{ line.toUpperCase() }}
+              </tspan>
+            </text>
+          </g>
+
+          <!-- Konten Petak Sisi Normal -->
+          <g v-else>
+            <text
+              x="0"
+              y="-19"
+              text-anchor="middle"
+              class="tile-symbol"
+              :fill="tile.color"
+            >
+              {{ tile.symbol || tile.index + 1 }}
+            </text>
+
+            <text
+              x="0"
+              :y="tile.nameLines.length > 1 ? -3 : 2"
+              text-anchor="middle"
+              class="tile-name"
+              :class="{
+                'tile-name--compact': tile.nameLines.some(
+                  (line) => line.length > 7,
+                ),
+              }"
+              fill="#26352c"
+            >
+              <tspan
+                v-for="(line, lineIndex) in tile.nameLines"
+                :key="`${tile.id}-line-${lineIndex}`"
+                x="0"
+                :dy="lineIndex === 0 ? 0 : 10.5"
+              >
+                {{ line }}
+              </tspan>
+            </text>
+          </g>
 
           <title>
             {{ tile.name }}{{ tile.landmark ? ` — ${tile.landmark}` : '' }}
-            | Pulau {{ tile.island }}
+            | {{ tile.isCorner ? 'Sudut Khusus' : `Pulau ${tile.island}` }}
             | {{
               tile.players.map((player) => player.name).join(", ")
               || "Tidak ada pemain"
@@ -774,13 +832,16 @@ const tilePathPoints = computed(() => {
           </title>
         </g>
 
-        <!-- Pion dirender terpisah agar dapat bergerak antarpeta. -->
+        <!-- Layer pion pemain -->
         <g class="pawn-layer" aria-label="Posisi pion pemain">
           <g
             v-for="pawn in positionedPawns"
             :key="pawn.id"
             class="pawn-position"
-            :class="{ 'pawn-position--moving': pawn.isMoving }"
+            :class="{
+              'pawn-position--moving': pawn.isMoving,
+              'pawn-position--active': pawn.isActive,
+            }"
             :data-player-id="pawn.id"
             :data-tile-index="pawn.visualPosition"
             :data-movement-step="pawn.currentStep"
@@ -795,25 +856,35 @@ const tilePathPoints = computed(() => {
               :class="{
                 'pawn-marker--hopping': pawn.isMoving && pawn.currentStep > 0,
                 'pawn-marker--final': pawn.isFinalHop,
+                'pawn-marker--active': pawn.isActive,
               }"
               :style="{
                 animationDuration: `${pawn.hopDurationMs}ms`,
               }"
             >
               <circle
-                r="11"
+                r="9.5"
                 :fill="pawn.color"
                 stroke="#ffffff"
-                stroke-width="3"
+                stroke-width="2.5"
+              />
+              <circle
+                v-if="pawn.isActive"
+                r="12.5"
+                fill="none"
+                :stroke="pawn.color"
+                stroke-width="1.5"
+                stroke-dasharray="2 2"
+                opacity="0.8"
               />
               <text
-                y="3.5"
+                y="3"
                 text-anchor="middle"
                 class="pawn-initial"
               >
                 {{ pawn.name.slice(0, 1).toUpperCase() }}
               </text>
-              <title>{{ pawn.name }}</title>
+              <title>{{ pawn.name }} (Petak {{ pawn.visualPosition + 1 }})</title>
             </g>
           </g>
         </g>
@@ -831,7 +902,6 @@ const tilePathPoints = computed(() => {
           class="legend-color"
           :style="{ backgroundColor: island.color }"
         />
-
         <span>{{ island.name }}</span>
       </div>
     </div>
@@ -847,7 +917,6 @@ const tilePathPoints = computed(() => {
           class="legend-color player-color"
           :style="{ backgroundColor: player.color }"
         />
-
         <span>{{ player.name }}</span>
       </div>
     </div>
@@ -855,40 +924,56 @@ const tilePathPoints = computed(() => {
 </template>
 
 <style scoped>
+.board-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 12px 6px;
+}
+
 .board-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
 }
 
 .board-heading h2 {
-  margin-bottom: 8px;
+  margin-bottom: 2px;
+  font-size: 15px;
 }
 
 .notice {
   margin-bottom: 0;
   color: #8a5a13;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.3;
 }
 
 .tile-count {
   flex-shrink: 0;
-  padding: 6px 10px;
-  border-radius: 20px;
+  padding: 3px 8px;
+  border-radius: 16px;
   background: #e9f5ef;
   color: #176b50;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .pentagon-board {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   border: 1px solid #d7e5dc;
-  border-radius: 24px;
+  border-radius: 16px;
   background:
     radial-gradient(circle at 50% 42%, #ffffff 0, #f5faf6 42%, #e5f0e9 100%);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%);
@@ -896,8 +981,12 @@ const tilePathPoints = computed(() => {
 
 .pentagon-svg {
   display: block;
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
+  aspect-ratio: 1100 / 1020;
+  object-fit: contain;
 }
 
 .island-label {
@@ -916,18 +1005,24 @@ const tilePathPoints = computed(() => {
 
 .tile-symbol {
   font-family: "Segoe UI Symbol", "Segoe UI Emoji", sans-serif;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 800;
 }
 
 .tile-name {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: -0.15px;
 }
 
 .tile-name--compact {
   font-size: 8.5px;
+}
+
+.corner-name {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
 }
 
 .pawn-layer {
@@ -938,18 +1033,18 @@ const tilePathPoints = computed(() => {
   transform-box: view-box;
   transform-origin: 0 0;
   transition-property: transform;
-  transition-timing-function: cubic-bezier(0.22, 0.78, 0.28, 1);
+  transition-timing-function: cubic-bezier(0.25, 0.85, 0.35, 1);
   will-change: transform;
 }
 
 .pawn-marker {
-  filter: drop-shadow(0 3px 2px rgb(28 55 40 / 24%));
+  filter: drop-shadow(0 2.5px 2px rgb(28 55 40 / 22%));
   transform-origin: center;
 }
 
 .pawn-marker--hopping {
   animation-name: pawn-hop;
-  animation-timing-function: cubic-bezier(0.2, 0.72, 0.24, 1);
+  animation-timing-function: cubic-bezier(0.22, 0.8, 0.3, 1);
 }
 
 .pawn-marker--final {
@@ -958,19 +1053,20 @@ const tilePathPoints = computed(() => {
 
 .pawn-initial {
   fill: #ffffff;
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 900;
 }
 
+/* Animasi hop halus dan terkontrol (5-8 SVG units) */
 @keyframes pawn-hop {
   0% {
     transform: translateY(0) scale(1);
   }
-  46% {
-    transform: translateY(-26px) scale(1.08);
+  45% {
+    transform: translateY(-6px) scale(1.03);
   }
-  82% {
-    transform: translateY(1px) scale(1.02, 0.96);
+  78% {
+    transform: translateY(0.4px) scale(1.01, 0.98);
   }
   100% {
     transform: translateY(0) scale(1);
@@ -981,14 +1077,14 @@ const tilePathPoints = computed(() => {
   0% {
     transform: translateY(0) scale(1);
   }
-  44% {
-    transform: translateY(-32px) scale(1.14);
+  45% {
+    transform: translateY(-8px) scale(1.05);
   }
-  78% {
-    transform: translateY(2px) scale(1.12, 0.9);
+  75% {
+    transform: translateY(0.6px) scale(1.02, 0.97);
   }
   100% {
-    transform: translateY(0) scale(1.08);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1005,59 +1101,81 @@ const tilePathPoints = computed(() => {
 
 .center-eyebrow {
   fill: #6d8274;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
 }
 
 .center-title {
   fill: #176b50;
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 900;
   letter-spacing: 1px;
 }
 
 .center-subtitle {
   fill: #68786d;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .island-legend,
 .player-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 20px;
-  margin-top: 16px;
+  gap: 5px 14px;
+  margin-top: 6px;
+  flex: 0 0 auto;
 }
 
 .player-legend {
-  padding-top: 12px;
+  padding-top: 5px;
   border-top: 1px solid #e5e9e6;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 10.5px;
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   flex: 0 0 auto;
-  border-radius: 3px;
+  border-radius: 2.5px;
 }
 
 .player-color {
-  border: 2px solid white;
+  border: 1.5px solid white;
   border-radius: 50%;
   box-shadow: 0 0 0 1px #ccd4ce;
+}
+
+@media (max-width: 1024px), (max-height: 640px) {
+  .board-wrapper {
+    height: auto;
+    min-height: 0;
+  }
+
+  .pentagon-board {
+    height: auto;
+    min-height: 0;
+    flex: none;
+    aspect-ratio: 1100 / 1020;
+  }
+
+  .pentagon-svg {
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
 }
 
 @media (max-width: 600px) {
   .board-heading {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .island-label text {
@@ -1066,12 +1184,12 @@ const tilePathPoints = computed(() => {
   }
 
   .center-title {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .island-legend,
   .player-legend {
-    gap: 10px 14px;
+    gap: 6px 10px;
   }
 }
 </style>

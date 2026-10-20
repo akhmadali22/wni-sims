@@ -5,6 +5,8 @@ import {
   buildMovementPath,
   createPawnMovementAnimation,
   getPawnSlotOffset,
+  getAdaptiveTilePawnOffset,
+  getAdaptiveCornerPawnOffset,
 } from "../pawnMovement";
 
 describe("pawn movement path", () => {
@@ -72,5 +74,37 @@ describe("pawn movement path", () => {
     expect(
       new Set(offsets.map(({ x, y }) => `${x},${y}`)).size,
     ).toBe(5);
+  });
+
+  it("menyediakan penempatan pion adaptif yang unik dan tidak bentrok untuk 1-5 pion pada petak sisi", () => {
+    for (let total = 1; total <= 5; total++) {
+      const offsets = Array.from({ length: total }, (_, idx) =>
+        getAdaptiveTilePawnOffset(idx, total),
+      );
+      // Semua slot dalam formasi harus unik
+      const uniqueKeys = new Set(offsets.map((p) => `${p.x},${p.y}`));
+      expect(uniqueKeys.size).toBe(total);
+      // Semua offset harus berada dalam batas aman petak (trackWidth ~40 => |x| <= 14, y antara 5 dan 28)
+      for (const offset of offsets) {
+        expect(Math.abs(offset.x)).toBeLessThanOrEqual(13);
+        expect(offset.y).toBeGreaterThanOrEqual(7);
+        expect(offset.y).toBeLessThanOrEqual(26);
+      }
+    }
+  });
+
+  it("menyediakan penempatan pion adaptif yang aman untuk 1-5 pion pada corner", () => {
+    for (let total = 1; total <= 5; total++) {
+      const offsets = Array.from({ length: total }, (_, idx) =>
+        getAdaptiveCornerPawnOffset(idx, total),
+      );
+      const uniqueKeys = new Set(offsets.map((p) => `${p.x},${p.y}`));
+      expect(uniqueKeys.size).toBe(total);
+      for (const offset of offsets) {
+        expect(Math.abs(offset.x)).toBeLessThanOrEqual(15);
+        expect(offset.y).toBeGreaterThanOrEqual(7);
+        expect(offset.y).toBeLessThanOrEqual(27);
+      }
+    }
   });
 });
