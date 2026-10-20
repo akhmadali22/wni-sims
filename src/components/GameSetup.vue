@@ -41,8 +41,9 @@ function submit() {
 
 <template>
   <section class="setup panel" aria-labelledby="setup-title">
+    <span class="setup-kicker">Mulai petualangan</span>
     <h2 id="setup-title">Siapkan Permainan</h2>
-    <p>
+    <p class="setup-intro">
       Pilih {{ MIN_PLAYERS }}–{{ MAX_PLAYERS }} pemain. Setiap pemain
       memulai dengan Rp{{ DEFAULT_INITIAL_CASH.toLocaleString("id-ID") }}.
     </p>
@@ -53,9 +54,8 @@ function submit() {
         :key="index"
         class="player-input"
       >
-        <label :for="`player-name-${index}`">
-          Pemain {{ index + 1 }}
-        </label>
+        <span class="setup-player-number">{{ index + 1 }}</span>
+        <label :for="`player-name-${index}`">Pemain {{ index + 1 }}</label>
         <input
           :id="`player-name-${index}`"
           v-model="playerNames[index]"
@@ -95,23 +95,73 @@ function submit() {
 
 <style scoped>
 .setup {
-  max-width: 680px;
-  margin: 24px auto;
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 34px;
+}
+
+.setup-kicker {
+  color: var(--color-green);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.setup h2 {
+  margin: 7px 0 8px;
+  font-size: clamp(28px, 4vw, 38px);
+}
+
+.setup-intro {
+  max-width: 560px;
+  margin-bottom: 24px;
+  color: var(--color-text-soft);
+  line-height: 1.6;
 }
 
 .player-input {
   display: grid;
-  grid-template-columns: 100px minmax(0, 1fr) auto;
+  grid-template-columns: 34px 90px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-soft);
+}
+
+.setup-player-number {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.player-input label {
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .player-input input {
   min-width: 0;
-  padding: 10px 12px;
-  border: 1px solid #bdcec2;
-  border-radius: 8px;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 10px;
+  background: white;
+  color: var(--color-text);
+  font: inherit;
+}
+
+.player-input input:focus {
+  border-color: var(--color-green);
+  outline: 3px solid rgb(26 122 86 / 12%);
 }
 
 .setup-actions {
@@ -122,8 +172,8 @@ function submit() {
 }
 
 .secondary-button {
-  background: #e9f0eb;
-  color: #26352c;
+  background: var(--color-surface-soft);
+  color: var(--color-green-dark);
 }
 
 .setup-error {
@@ -131,8 +181,22 @@ function submit() {
 }
 
 @media (max-width: 560px) {
+  .setup {
+    margin: 24px auto;
+    padding: 22px 18px;
+  }
+
   .player-input {
-    grid-template-columns: 1fr;
+    grid-template-columns: 34px 1fr;
+  }
+
+  .player-input input,
+  .player-input button {
+    grid-column: 1 / -1;
+  }
+
+  .setup-actions {
+    flex-direction: column-reverse;
   }
 }
 </style>

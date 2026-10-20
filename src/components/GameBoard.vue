@@ -17,10 +17,10 @@ const props = defineProps<{
   movementAnimation: PawnMovementAnimation | null;
 }>();
 
-const WIDTH = 1200;
-const HEIGHT = 1080;
+const WIDTH = 1100;
+const HEIGHT = 1020;
 
-const CENTER = { x: WIDTH / 2, y: 520 };
+const CENTER = { x: WIDTH / 2, y: 490 };
 
 /*
  * Vertex pentagon:
@@ -32,10 +32,10 @@ const CENTER = { x: WIDTH / 2, y: 520 };
  */
 // Pentagon: lima vertex dengan orientasi konsisten.
 const BOARD_CENTER = CENTER;
-const OUTER_RADIUS = 430;
+const OUTER_RADIUS = 465;
 const OUTLINE_CORNER_RADIUS = 32;
 const CORNER_INSET_RATIO = 0.105;
-const TRACK_HALF_HEIGHT = 30;
+const TRACK_HALF_HEIGHT = 34;
 const TILE_GAP = 4;
 
 // Vertex pertama di atas, lalu searah jarum jam.
@@ -84,6 +84,24 @@ function getReadableRotation(angle: number) {
   }
 
   return angle;
+}
+
+function splitTileName(name: string) {
+  if (name.length <= 8) {
+    return [name];
+  }
+
+  const words = name.split(" ");
+  if (words.length > 1) {
+    const midpoint = Math.ceil(words.length / 2);
+    return [
+      words.slice(0, midpoint).join(" "),
+      words.slice(midpoint).join(" "),
+    ];
+  }
+
+  const midpoint = Math.ceil(name.length / 2);
+  return [name.slice(0, midpoint), name.slice(midpoint)];
 }
 
 const roundedCorners = vertices.map((vertex, index) => ({
@@ -468,6 +486,7 @@ const positionedTiles = computed(() =>
       ...tile,
       ...position,
       ...palette,
+      nameLines: splitTileName(tile.name),
       isCorner,
       cornerPath: isCorner && corner ? getCornerPath(corner) : "",
       players: props.players.filter(
@@ -490,7 +509,7 @@ const positionedPawns = computed(() =>
       ...player,
       visualPosition,
       x: (tile?.x ?? CENTER.x) + offset.x,
-      y: (tile?.y ?? CENTER.y) + offset.y + 20,
+      y: (tile?.y ?? CENTER.y) + offset.y + 24,
       isMoving,
       currentStep: isMoving
         ? props.movementAnimation?.currentStep ?? 0
@@ -707,7 +726,7 @@ const tilePathPoints = computed(() => {
 
           <text
             x="0"
-            y="-12"
+            y="-19"
             text-anchor="middle"
             class="tile-symbol"
             :fill="
@@ -721,11 +740,13 @@ const tilePathPoints = computed(() => {
 
           <text
             x="0"
-            y="3"
+            :y="tile.nameLines.length > 1 ? -3 : 2"
             text-anchor="middle"
             class="tile-name"
             :class="{
-              'tile-name--compact': tile.name.length > 8,
+              'tile-name--compact': tile.nameLines.some(
+                (line) => line.length > 7,
+              ),
             }"
             :fill="
               tile.type === 'start'
@@ -733,11 +754,14 @@ const tilePathPoints = computed(() => {
                 : '#26352c'
             "
           >
-            {{
-              tile.name.length > 10
-                ? tile.name.slice(0, 9) + "…"
-                : tile.name
-            }}
+            <tspan
+              v-for="(line, lineIndex) in tile.nameLines"
+              :key="`${tile.id}-line-${lineIndex}`"
+              x="0"
+              :dy="lineIndex === 0 ? 0 : 11"
+            >
+              {{ line }}
+            </tspan>
           </text>
 
           <title>
@@ -863,8 +887,11 @@ const tilePathPoints = computed(() => {
 .pentagon-board {
   width: 100%;
   overflow: hidden;
-  border-radius: 12px;
-  background: #edf3ee;
+  border: 1px solid #d7e5dc;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 42%, #ffffff 0, #f5faf6 42%, #e5f0e9 100%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%);
 }
 
 .pentagon-svg {
@@ -889,17 +916,18 @@ const tilePathPoints = computed(() => {
 
 .tile-symbol {
   font-family: "Segoe UI Symbol", "Segoe UI Emoji", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .tile-name {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: -0.15px;
 }
 
 .tile-name--compact {
-  font-size: 7.5px;
+  font-size: 8.5px;
 }
 
 .pawn-layer {

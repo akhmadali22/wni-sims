@@ -22,14 +22,22 @@ const {
 <template>
   <main class="app">
     <header class="app-header">
-      <div>
+      <div class="brand-block">
+        <span class="brand-kicker">Permainan bertahan hidup ekonomi</span>
         <h1>WNI Simulator</h1>
-        <p>Prototipe permainan papan berbasis browser</p>
+        <p>Lima pulau, satu perjalanan penuh kejutan.</p>
       </div>
 
-      <div v-if="state && currentPlayer" class="turn-indicator">
-        <span>Giliran {{ state.turnNumber }}</span>
-        <strong>{{ currentPlayer.name }}</strong>
+      <div
+        v-if="state && currentPlayer"
+        class="turn-indicator"
+        :style="{ '--active-player-color': currentPlayer.color }"
+      >
+        <span class="turn-pawn" aria-hidden="true" />
+        <span class="turn-copy">
+          <small>Giliran {{ state.turnNumber }}</small>
+          <strong>{{ currentPlayer.name }}</strong>
+        </span>
       </div>
     </header>
 
@@ -41,35 +49,38 @@ const {
           :players="state.players"
           :movement-animation="movementAnimation"
         />
-
-        <DiceRoller
-          :dice="state.dice"
-          :disabled="
-            state.phase !== 'awaiting_roll' || isAnimatingMovement
-          "
-          @roll="throwDice"
-        />
-
-        <button
-          v-if="state.phase === 'awaiting_end_turn'"
-          class="end-turn-button"
-          type="button"
-          @click="finishTurn"
-        >
-          Akhiri Giliran
-        </button>
-
-        <button
-          v-if="state.phase === 'awaiting_prison_turn'"
-          class="end-turn-button"
-          type="button"
-          @click="finishPrisonTurn"
-        >
-          Akhiri Giliran Penjara
-        </button>
       </div>
 
       <aside class="sidebar">
+        <div class="action-stack">
+          <DiceRoller
+            :dice="state.dice"
+            :disabled="
+              state.phase !== 'awaiting_roll' || isAnimatingMovement
+            "
+            :rolling="isAnimatingMovement"
+            @roll="throwDice"
+          />
+
+          <button
+            v-if="state.phase === 'awaiting_end_turn'"
+            class="end-turn-button"
+            type="button"
+            @click="finishTurn"
+          >
+            Akhiri Giliran
+          </button>
+
+          <button
+            v-if="state.phase === 'awaiting_prison_turn'"
+            class="end-turn-button"
+            type="button"
+            @click="finishPrisonTurn"
+          >
+            Akhiri Giliran Penjara
+          </button>
+        </div>
+
         <PlayerPanel
           :players="state.players"
           :current-player-id="currentPlayer.id"
