@@ -298,7 +298,7 @@ function getIslandLabel(side: number) {
   const end = vertices[(side + 1) % vertices.length];
 
   if (!start || !end) {
-    return { ...CENTER };
+    return { ...CENTER, rotation: 0 };
   }
 
   const midpoint = interpolate(start, end, 0.5);
@@ -306,10 +306,18 @@ function getIslandLabel(side: number) {
   const dy = midpoint.y - CENTER.y;
   const length = Math.hypot(dx, dy) || 1;
   const offset = 38;
+  let rotation = Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI;
+
+  if (rotation > 90) {
+    rotation -= 180;
+  } else if (rotation < -90) {
+    rotation += 180;
+  }
 
   return {
     x: midpoint.x + (dx / length) * offset,
     y: midpoint.y + (dy / length) * offset,
+    rotation,
   };
 }
 
@@ -530,6 +538,7 @@ const tilePathPoints = computed(() => {
           <text
             :x="getIslandLabel(island.side).x"
             :y="getIslandLabel(island.side).y"
+            :transform="`rotate(${getIslandLabel(island.side).rotation} ${getIslandLabel(island.side).x} ${getIslandLabel(island.side).y})`"
             text-anchor="middle"
             dominant-baseline="middle"
             :fill="island.color"
