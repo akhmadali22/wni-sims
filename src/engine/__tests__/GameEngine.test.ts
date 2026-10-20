@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DEFAULT_INITIAL_CASH,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+} from "../../config/game";
+import { board } from "../../data/board";
+import {
   applyRoll,
   createInitialState,
   endTurn,
@@ -12,26 +18,50 @@ import {
 
 describe("GameEngine", () => {
   it("membuat permainan dengan dua pemain", () => {
-    const state = createInitialState(
-      ["Ali", "Budi"],
-      5_000_000,
-    );
+    const state = createInitialState(["Ali", "Budi"]);
 
     expect(state.players).toHaveLength(2);
     expect(state.players[0].name).toBe("Ali");
-    expect(state.players[0].cash).toBe(5_000_000);
+    expect(state.players[0].cash).toBe(DEFAULT_INITIAL_CASH);
     expect(state.phase).toBe("awaiting_roll");
   });
 
-  it("menolak jumlah pemain yang tidak valid", () => {
+  it("menerima batas jumlah pemain yang valid", () => {
     expect(() =>
-      createInitialState(["Ali"], 5_000_000),
+      createInitialState(
+        Array.from(
+          { length: MIN_PLAYERS },
+          (_, index) => `Pemain ${index + 1}`,
+        ),
+      ),
+    ).not.toThrow();
+
+    expect(() =>
+      createInitialState(
+        Array.from(
+          { length: MAX_PLAYERS },
+          (_, index) => `Pemain ${index + 1}`,
+        ),
+      ),
+    ).not.toThrow();
+  });
+
+  it("menolak jumlah pemain di luar batas", () => {
+    expect(() =>
+      createInitialState(
+        Array.from(
+          { length: MIN_PLAYERS - 1 },
+          (_, index) => `Pemain ${index + 1}`,
+        ),
+      ),
     ).toThrow();
 
     expect(() =>
       createInitialState(
-        ["A", "B", "C", "D", "E", "F"],
-        5_000_000,
+        Array.from(
+          { length: MAX_PLAYERS + 1 },
+          (_, index) => `Pemain ${index + 1}`,
+        ),
       ),
     ).toThrow();
   });
@@ -68,7 +98,7 @@ describe("GameEngine", () => {
       ...state,
       players: state.players.map((player, index) =>
         index === 0
-          ? { ...player, position: 38 }
+          ? { ...player, position: board.length - 2 }
           : player,
       ),
     };
@@ -80,6 +110,33 @@ describe("GameEngine", () => {
     );
 
     expect(nextState.players[0].position).toBe(2);
+    expect(nextState.players[0].cash).toBe(
+      5_000_000 + START_SALARY,
+    );
+  });
+
+  it("memberikan gaji ketika pemain berhenti tepat di Start", () => {
+    const state = createInitialState(
+      ["Ali", "Budi"],
+      5_000_000,
+    );
+
+    const beforeStart = {
+      ...state,
+      players: state.players.map((player, index) =>
+        index === 0
+          ? { ...player, position: board.length - 1 }
+          : player,
+      ),
+    };
+
+    const nextState = movePlayer(
+      beforeStart,
+      "player-1",
+      1,
+    );
+
+    expect(nextState.players[0].position).toBe(0);
     expect(nextState.players[0].cash).toBe(
       5_000_000 + START_SALARY,
     );

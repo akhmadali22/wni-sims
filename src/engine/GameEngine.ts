@@ -4,6 +4,11 @@ import type {
   Player,
 } from "../types/game";
 
+import {
+  DEFAULT_INITIAL_CASH,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+} from "../config/game";
 import { board } from "../data/board";
 
 export const START_SALARY = 1_000_000;
@@ -41,10 +46,15 @@ export function rollDice(
 
 export function createInitialState(
   playerNames: string[],
-  startingCash: number,
+  startingCash: number = DEFAULT_INITIAL_CASH,
 ): GameState {
-  if (playerNames.length < 2 || playerNames.length > 5) {
-    throw new Error("Jumlah pemain harus antara 2 dan 5.");
+  if (
+    playerNames.length < MIN_PLAYERS ||
+    playerNames.length > MAX_PLAYERS
+  ) {
+    throw new Error(
+      `Jumlah pemain harus antara ${MIN_PLAYERS} dan ${MAX_PLAYERS}.`,
+    );
   }
 
   if (playerNames.some((name) => !name.trim())) {

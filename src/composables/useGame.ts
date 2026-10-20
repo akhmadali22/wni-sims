@@ -11,10 +11,7 @@ import type { GameState } from "../types/game";
 
 export function useGame() {
   const state = ref<GameState>(
-    createInitialState(
-      ["Pemain 1", "Pemain 2"],
-      5_000_000,
-    ),
+    createInitialState(["Pemain 1", "Pemain 2"]),
   );
 
   const currentPlayer = computed(
