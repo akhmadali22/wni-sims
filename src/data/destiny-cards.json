@@ -1,0 +1,870 @@
+[
+  {
+    "id": 1,
+    "title": "Rezeki Nomplok",
+    "type": "good",
+    "description": "Kamu mendapatkan rezeki tak terduga sebesar Rp1.000.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 1000000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 2,
+    "title": "Warisan Mendadak",
+    "type": "good",
+    "description": "Kerabat jauh meninggalkan warisan sebesar Rp1.500.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 1500000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 3,
+    "title": "Bonus Kerja",
+    "type": "good",
+    "description": "Kamu menerima bonus kerja sebesar Rp750.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 750000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 4,
+    "title": "Investasi Cuan",
+    "type": "good",
+    "description": "Investasimu menghasilkan keuntungan sebesar Rp600.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 600000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 5,
+    "title": "Uang Ditemukan",
+    "type": "good",
+    "description": "Kamu menemukan uang sebesar Rp300.000 di jalan.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 300000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 6,
+    "title": "Hadiah Undian",
+    "type": "good",
+    "description": "Kamu memenangkan undian dan memperoleh Rp1.200.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 1200000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 7,
+    "title": "Tagihan Mendadak",
+    "type": "bad",
+    "description": "Tagihan tak terduga membuatmu membayar Rp500.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 500000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 8,
+    "title": "Dompet Ketinggalan",
+    "type": "bad",
+    "description": "Kamu kehilangan uang sebesar Rp250.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 250000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 9,
+    "title": "Denda Lingkungan",
+    "type": "bad",
+    "description": "Kamu melanggar aturan lingkungan dan membayar denda Rp400.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 400000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 10,
+    "title": "Biaya Perbaikan",
+    "type": "bad",
+    "description": "Barang milikmu rusak dan membutuhkan biaya perbaikan Rp650.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 650000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 11,
+    "title": "Salah Parkir",
+    "type": "bad",
+    "description": "Kamu terkena denda parkir sebesar Rp200.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 200000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 12,
+    "title": "Kehilangan Peluang",
+    "type": "bad",
+    "description": "Kamu kehilangan satu giliran karena melewatkan kesempatan penting.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_turn",
+      "amount": 0,
+      "recipient": null,
+      "destination": null,
+      "turns_lost": 1
+    }
+  },
+  {
+    "id": 13,
+    "title": "Bonus Pemilik Properti",
+    "type": "conditional",
+    "description": "Jika memiliki setidaknya satu properti, kamu mendapat Rp750.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "greater_than",
+        "subject": "property_count",
+        "value": 0
+      },
+      "then": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 750000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 14,
+    "title": "Beban Pemilik Properti",
+    "type": "conditional",
+    "description": "Jika memiliki properti, kamu membayar biaya perawatan Rp300.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "greater_than",
+        "subject": "property_count",
+        "value": 0
+      },
+      "then": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 300000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 15,
+    "title": "Utang Teman",
+    "type": "conditional",
+    "description": "Jika ada pemain yang lebih kaya darimu, pemain terkaya membayar Rp300.000 kepadamu.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "exists",
+        "subject": "player_with_more_money",
+        "value": null
+      },
+      "then": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 300000,
+        "recipient": "richest_player",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 16,
+    "title": "Investor Andal",
+    "type": "conditional",
+    "description": "Jika memiliki lebih dari dua properti, kamu menerima Rp1.000.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "greater_than",
+        "subject": "property_count",
+        "value": 2
+      },
+      "then": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 1000000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 17,
+    "title": "Biaya Pengelolaan",
+    "type": "conditional",
+    "description": "Jika memiliki lebih dari dua properti, kamu membayar biaya pengelolaan Rp500.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "greater_than",
+        "subject": "property_count",
+        "value": 2
+      },
+      "then": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 500000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 18,
+    "title": "Bantuan Pemain Baru",
+    "type": "conditional",
+    "description": "Jika tidak memiliki properti, bank memberimu bantuan Rp400.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "conditional",
+      "condition": {
+        "operator": "greater_than",
+        "subject": "property_count",
+        "value": 0
+      },
+      "then": {
+        "kind": "action",
+        "action": "none",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 0
+      },
+      "else": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 400000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 19,
+    "title": "Roda Nasib",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp1.000.000. Jika ganjil, bayar Rp500.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 1000000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 500000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 20,
+    "title": "Langkah Beruntung",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, pindah ke Parkiran. Jika ganjil, kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "move_to",
+        "amount": 0,
+        "recipient": null,
+        "destination": "parkiran",
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_turn",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 1
+      }
+    }
+  },
+  {
+    "id": 21,
+    "title": "Taruhan Kecil",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp400.000. Jika ganjil, bayar Rp300.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 400000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 300000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 22,
+    "title": "Nasib Ganda",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp800.000. Jika ganjil, kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 800000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_turn",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 1
+      }
+    }
+  },
+  {
+    "id": 23,
+    "title": "Sial Beruntun",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp500.000. Jika ganjil, bayar Rp500.000 dan kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 500000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 500000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 1
+      }
+    }
+  },
+  {
+    "id": 24,
+    "title": "Lemparan Berkah",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp700.000. Jika ganjil, bayar Rp200.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 700000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 200000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 25,
+    "title": "Peluang Terakhir",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp1.500.000. Jika ganjil, kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 1500000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_turn",
+        "amount": 0,
+        "recipient": null,
+        "destination": null,
+        "turns_lost": 1
+      }
+    }
+  },
+  {
+    "id": 26,
+    "title": "Doa Orang Tua",
+    "type": "item",
+    "description": "Simpan kartu ini. Kartu melindungimu dari satu kartu musibah.",
+    "trigger": "on_disaster",
+    "usage": {
+      "mode": "automatic",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "protect_from_disaster",
+      "amount": 0,
+      "recipient": null,
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 27,
+    "title": "Kartu Rezeki",
+    "type": "item",
+    "description": "Simpan kartu ini dan gunakan untuk menerima Rp500.000 dari bank.",
+    "trigger": "manual",
+    "usage": {
+      "mode": "manual",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 500000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 28,
+    "title": "Jimat Keberuntungan",
+    "type": "item",
+    "description": "Simpan kartu ini dan gunakan untuk menerima Rp300.000 dari bank.",
+    "trigger": "manual",
+    "usage": {
+      "mode": "manual",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 300000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 29,
+    "title": "Bekal Perjalanan",
+    "type": "item",
+    "description": "Simpan kartu ini dan gunakan untuk menerima Rp200.000 dari bank.",
+    "trigger": "manual",
+    "usage": {
+      "mode": "manual",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 200000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 30,
+    "title": "Tiket Jalan Pintas",
+    "type": "item",
+    "description": "Simpan kartu ini dan gunakan untuk berpindah ke Parkiran.",
+    "trigger": "manual",
+    "usage": {
+      "mode": "manual",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "move_to",
+      "amount": 0,
+      "recipient": null,
+      "destination": "parkiran",
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 31,
+    "title": "Kartu Istirahat",
+    "type": "item",
+    "description": "Simpan kartu ini dan gunakan untuk melewatkan satu giliran.",
+    "trigger": "manual",
+    "usage": {
+      "mode": "manual",
+      "consumable": true,
+      "charges": 1
+    },
+    "effect": {
+      "kind": "action",
+      "action": "lose_turn",
+      "amount": 0,
+      "recipient": null,
+      "destination": null,
+      "turns_lost": 1
+    }
+  },
+  {
+    "id": 32,
+    "title": "Jalan Pintas",
+    "type": "instant",
+    "description": "Kamu langsung berpindah ke lokasi Parkiran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "move_to",
+      "amount": 0,
+      "recipient": null,
+      "destination": "parkiran",
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 33,
+    "title": "Pulang Dulu",
+    "type": "instant",
+    "description": "Kamu berpindah ke lokasi Rumah dan kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "move_to",
+      "amount": 0,
+      "recipient": null,
+      "destination": "rumah",
+      "turns_lost": 1
+    }
+  },
+  {
+    "id": 34,
+    "title": "Uang Saku",
+    "type": "instant",
+    "description": "Bank memberimu uang saku sebesar Rp200.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 200000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 35,
+    "title": "Patungan Wajib",
+    "type": "instant",
+    "description": "Kamu membayar Rp150.000 kepada setiap pemain lain.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 150000,
+      "recipient": "all_other_players",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 36,
+    "title": "Sedekah Mendadak",
+    "type": "instant",
+    "description": "Kamu memberikan Rp250.000 kepada pemain dengan uang paling sedikit.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 250000,
+      "recipient": "player_with_least_money",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 37,
+    "title": "Kabar Baik",
+    "type": "good",
+    "description": "Kamu menerima hadiah tambahan sebesar Rp450.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "gain_money",
+      "amount": 450000,
+      "recipient": "bank",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 38,
+    "title": "Sial di Perjalanan",
+    "type": "bad",
+    "description": "Kamu harus membayar biaya perjalanan tambahan sebesar Rp350.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "action",
+      "action": "lose_money",
+      "amount": 350000,
+      "recipient": "negara",
+      "destination": null,
+      "turns_lost": 0
+    }
+  },
+  {
+    "id": 39,
+    "title": "Keberuntungan Berantai",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp600.000. Jika ganjil, bayar Rp250.000.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 600000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 250000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 0
+      }
+    }
+  },
+  {
+    "id": 40,
+    "title": "Lemparan Pengorbanan",
+    "type": "probability",
+    "description": "Lempar satu dadu. Jika genap, dapat Rp400.000. Jika ganjil, bayar Rp400.000 dan kehilangan satu giliran.",
+    "trigger": "on_draw",
+    "usage": null,
+    "effect": {
+      "kind": "probability",
+      "method": "dice_parity",
+      "even": {
+        "kind": "action",
+        "action": "gain_money",
+        "amount": 400000,
+        "recipient": "bank",
+        "destination": null,
+        "turns_lost": 0
+      },
+      "odd": {
+        "kind": "action",
+        "action": "lose_money",
+        "amount": 400000,
+        "recipient": "negara",
+        "destination": null,
+        "turns_lost": 1
+      }
+    }
+  }
+]
