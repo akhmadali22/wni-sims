@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import {
   board,
@@ -534,6 +534,103 @@ const tilePathPoints = computed(() => {
   return points.join(" ");
 });
 
+
+// Kontrol sudut pandang papan 3D.
+const rotationX = ref(48);
+const rotationY = ref(-8);
+const zoom = ref(1);
+const panX = ref(0);
+const panY = ref(0);
+
+const isDragging = ref(false);
+const isPanning = ref(false);
+
+let pointerStartX = 0;
+let pointerStartY = 0;
+let initialRotationX = 0;
+let initialRotationY = 0;
+let initialPanX = 0;
+let initialPanY = 0;
+
+const boardTransform = computed(() => ({
+  transform: [
+    `translate(${panX.value}px, ${panY.value}px)`,
+    `scale(${zoom.value})`,
+    `rotateX(${rotationX.value}deg)`,
+    `rotateY(${rotationY.value}deg)`,
+  ].join(" "),
+}));
+
+function startBoardDrag(event: PointerEvent) {
+  if (event.button !== 0) return;
+
+  const target = event.target as HTMLElement;
+  if (target.closest("button")) return;
+
+  isDragging.value = true;
+  isPanning.value = event.shiftKey;
+
+  pointerStartX = event.clientX;
+  pointerStartY = event.clientY;
+
+  initialRotationX = rotationX.value;
+  initialRotationY = rotationY.value;
+  initialPanX = panX.value;
+  initialPanY = panY.value;
+
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+}
+
+function moveBoardDrag(event: PointerEvent) {
+  if (!isDragging.value) return;
+
+  const dx = event.clientX - pointerStartX;
+  const dy = event.clientY - pointerStartY;
+
+  if (isPanning.value || event.shiftKey) {
+    panX.value = initialPanX + dx;
+    panY.value = initialPanY + dy;
+    return;
+  }
+
+  rotationY.value = Math.max(
+    -60,
+    Math.min(60, initialRotationY + dx * 0.35),
+  );
+
+  rotationX.value = Math.max(
+    15,
+    Math.min(75, initialRotationX - dy * 0.25),
+  );
+}
+
+function stopBoardDrag(event: PointerEvent) {
+  isDragging.value = false;
+  isPanning.value = false;
+
+  const target = event.currentTarget as HTMLElement;
+  if (target.hasPointerCapture(event.pointerId)) {
+    target.releasePointerCapture(event.pointerId);
+  }
+}
+
+function zoomBoard(event: WheelEvent) {
+  const factor = event.deltaY < 0 ? 1.1 : 0.9;
+  zoom.value = Math.max(0.65, Math.min(2.5, zoom.value * factor));
+}
+
+function changeZoom(amount: number) {
+  zoom.value = Math.max(0.65, Math.min(2.5, zoom.value + amount));
+}
+
+function resetBoardView() {
+  rotationX.value = 48;
+  rotationY.value = -8;
+  zoom.value = 1;
+  panX.value = 0;
+  panY.value = 0;
+}
+
 </script>
 
 <template>
@@ -553,9 +650,45 @@ const tilePathPoints = computed(() => {
       </span>
     </header>
 
-    <div class="pentagon-board">
+    <div class="board-controls" aria-label="Kontrol tampilan papan">
+      <button
+        type="button"
+        title="Perkecil papan"
+        aria-label="Perkecil papan"
+        @click="changeZoom(-0.1)"
+      >−</button>
+
+      <button
+        type="button"
+        title="Perbesar papan"
+        aria-label="Perbesar papan"
+        @click="changeZoom(0.1)"
+      >+</button>
+
+      <button
+        type="button"
+        title="Reset sudut pandang"
+        aria-label="Reset sudut pandang papan"
+        @click="resetBoardView"
+      >Reset view</button>
+
+      <span class="board-help">
+        Drag: rotasi · Shift + drag: geser · Scroll: zoom
+      </span>
+    </div>
+
+    <div
+      class="pentagon-board"
+      :class="{ 'is-dragging': isDragging }"
+      @pointerdown="startBoardDrag"
+      @pointermove="moveBoardDrag"
+      @pointerup="stopBoardDrag"
+      @pointercancel="stopBoardDrag"
+      @wheel.prevent="zoomBoard"
+    >
       <svg
         class="pentagon-svg"
+        :style="boardTransform"
         :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
         role="img"
         aria-label="Papan pentagon dengan lima pulau Indonesia"
@@ -884,9 +1017,50 @@ const tilePathPoints = computed(() => {
   font-weight: 700;
 }
 
+
+.board-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.board-controls button {
+  min-width: 36px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid #cbded1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #176b50;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.board-controls button:hover {
+  background: #e9f5ef;
+}
+
+.board-controls button:focus-visible {
+  outline: 2px solid #176b50;
+  outline-offset: 2px;
+}
+
+.board-help {
+  color: #68786d;
+  font-size: 12px;
+}
+
 .pentagon-board {
   width: 100%;
   overflow: hidden;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
   border: 1px solid #d7e5dc;
   border-radius: 24px;
   background:
@@ -898,6 +1072,14 @@ const tilePathPoints = computed(() => {
   display: block;
   width: 100%;
   height: auto;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  will-change: transform;
+}
+
+.pentagon-board.is-dragging {
+  cursor: grabbing;
 }
 
 .island-label {
