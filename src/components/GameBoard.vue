@@ -168,12 +168,16 @@ function getCornerPosition(corner: (typeof CORNERS)[number]) {
 
 /*
  * Geometri petak sudut (corner tile):
- * Membentuk sektor sudut pentagon yang terintegrasi rapi dengan outline luar pentagon,
- * tanpa celah kosong, serta bertemu petak sisi bertetangga dengan celah seragam TILE_GAP.
+ * Sisi luar corner mengikuti PERSIS batas rounded polygon outline (roundedCorners)
+ * sehingga tidak ada celah antara petak sudut dan garis tepi pentagon.
+ * Sisi dalam tetap menggunakan bezier dengan innerApex.
  */
 function getCornerPath(corner: (typeof CORNERS)[number]): string {
   const current = getCornerPosition(corner);
   const vertex = vertices[corner.vertex];
+  // roundedCorners sudah dihitung di scope luar — digunakan agar outer edge corner
+  // TEPAT mengikuti batas arc rounded polygon, sehingga tidak ada celah.
+  const rc = roundedCorners[corner.vertex];
 
   const prevCorner = CORNERS.find(
     (item) => item.vertex === (corner.vertex + 4) % 5,
@@ -182,7 +186,7 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
     (item) => item.vertex === (corner.vertex + 1) % 5,
   );
 
-  if (!prevCorner || !nextCorner || !vertex) {
+  if (!prevCorner || !nextCorner || !vertex || !rc) {
     console.error(`Sudut tetangga tidak ditemukan: ${corner.index}`);
     return "";
   }
@@ -216,10 +220,6 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
     x: current.x - incoming.x * halfIn,
     y: current.y - incoming.y * halfIn,
   };
-  const inOuter = {
-    x: midIn.x + outerIn.x * halfWidth,
-    y: midIn.y + outerIn.y * halfWidth,
-  };
   const inInner = {
     x: midIn.x - outerIn.x * halfWidth,
     y: midIn.y - outerIn.y * halfWidth,
@@ -230,10 +230,6 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
     x: current.x + outgoing.x * halfOut,
     y: current.y + outgoing.y * halfOut,
   };
-  const outOuter = {
-    x: midOut.x + outerOut.x * halfWidth,
-    y: midOut.y + outerOut.y * halfWidth,
-  };
   const outInner = {
     x: midOut.x - outerOut.x * halfWidth,
     y: midOut.y - outerOut.y * halfWidth,
@@ -242,13 +238,6 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
   // Vektor radial ke arah luar (dari CENTER menuju vertex)
   const radOut = normalize(vertex.x - CENTER.x, vertex.y - CENTER.y);
 
-  // Apex luar corner berada di radius yang konsisten dengan margin petak sisi ke border papan
-  const outerApexRadius = 451.5;
-  const outerApex = {
-    x: CENTER.x + radOut.x * outerApexRadius,
-    y: CENTER.y + radOut.y * outerApexRadius,
-  };
-
   // Lengkungan dalam corner
   const innerApexRadius = 380.5;
   const innerApex = {
@@ -256,13 +245,30 @@ function getCornerPath(corner: (typeof CORNERS)[number]): string {
     y: CENTER.y + radOut.y * innerApexRadius,
   };
 
+  // Titik outer corner tile di sisi incoming dan outgoing
+  const inOuter = {
+    x: midIn.x + outerIn.x * halfWidth,
+    y: midIn.y + outerIn.y * halfWidth,
+  };
+  const outOuter = {
+    x: midOut.x + outerOut.x * halfWidth,
+    y: midOut.y + outerOut.y * halfWidth,
+  };
+
   // Koordinat relatif terhadap pusat corner
   const fmt = (p: { x: number; y: number }) =>
     `${(p.x - current.x).toFixed(2)} ${(p.y - current.y).toFixed(2)}`;
 
+  // Outer edge corner tile mengikuti PERSIS batas arc rounded polygon:
+  //   inOuter → rc.start : sisi incoming menuju polygon boundary
+  //   Q vertex, rc.end   : arc rounded corner polygon (control = vertex)
+  //   rc.end → outOuter  : polygon boundary menuju sisi outgoing
+  // Dengan demikian tidak ada celah antara corner tile dan outline pentagon.
   return [
     `M ${fmt(inOuter)}`,
-    `Q ${fmt(outerApex)}, ${fmt(outOuter)}`,
+    `L ${fmt(rc.start)}`,
+    `Q ${fmt(vertex)}, ${fmt(rc.end)}`,
+    `L ${fmt(outOuter)}`,
     `L ${fmt(outInner)}`,
     `Q ${fmt(innerApex)}, ${fmt(inInner)}`,
     "Z",
